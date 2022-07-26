@@ -31,6 +31,7 @@ func WithTreePrintWalkOption() WalkOption {
 			case *InsertNode:
 			case *OtherwiseNode:
 			case *UpdateNode:
+			case *SetNode:
 			case *IncludeNode:
 
 			default:
@@ -85,6 +86,8 @@ func ParseXML(XMLdata string) (*MapperRootNode, error) {
 				mapperNodes[len(mapperNodes)-1].SetNext(n2)
 			case "insert":
 				n = &InsertNode{}
+			case "set":
+				n = &SetNode{}
 			case "sqlmapper":
 				n = &MapperRootNode{}
 			case "otherwise":

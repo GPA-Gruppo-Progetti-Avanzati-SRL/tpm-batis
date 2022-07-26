@@ -3,9 +3,43 @@ package sqlmapper
 import (
 	"fmt"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
-
+	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+var updateXML01 = []byte(`
+  <sqlmapper namespace="mapper/example" >
+    <update id="update" parameterType="map" >
+    update table_name
+    <set >
+      <if test=".field1" >
+        field1_db = #{.field1,jdbcType=VARCHAR},
+      </if> 
+    </set>
+    where  field2_db = #{.field2,jdbcType=VARCHAR}
+  </update>
+  </sqlmapper>
+`)
+
+func TestUpdateIf01(t *testing.T) {
+
+	var wanted string
+	var sqlStmt MappedStatement
+
+	m, err := NewMapper(string(updateXML01), WithBindStyle(BINDSTYLE_QUESTION))
+	require.NoError(t, err)
+
+	wanted = "update table_name set field1_db = ? where field2_db = ?"
+	mapp := map[string]interface{}{
+		"field1":    "field1_value",
+		"field2":    "field2_value",
+		"tableName": "r3_site",
+	}
+	sqlStmt, err = m.GetMappedStatement("update", mapp)
+	require.NoError(t, err)
+
+	require.Equal(t, wanted, sqlStmt.GetStatement())
+}
 
 var whereIfXML01 = []byte(`
 <sqlmapper namespace="org.r3.db.system.site.SiteMapper" >
@@ -30,7 +64,7 @@ var whereIfXML01 = []byte(`
           </collection>
     </resultMap>
 
-  <select id="selectBySite" resultMap="BaseResultMap"  parameterType="map" >
+  <select id="selectBy" resultMap="BaseResultMap"  parameterType="map" >
     select * from ${.tableName}
     <where> 
       <trim  prefixOverrides="and" >
@@ -62,58 +96,45 @@ func TestWhereIf01(t *testing.T) {
 		t.Fatal(err)
 	} else {
 
-		wanted = "select * from r3_site where f1 = ? and f2 = ?"
+		wanted = "select * from table_name where f1 = ? and f2 = ?"
 		mapp := map[string]interface{}{
 			"field1":    "field1_value",
 			"field2":    "field2_value",
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
-		wanted = "select * from r3_site"
+		wanted = "select * from table_name"
 		mapp = map[string]interface{}{
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
-		wanted = "select * from r3_site where f2 = ?"
+		wanted = "select * from table_name where f2 = ?"
 		mapp = map[string]interface{}{
-			"tableName": "r3_site",
+			"tableName": "table_name",
 			"field2":    "field2_value",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
-
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 	}
 }
 
 var whereChooseXML01 = []byte(`
 <sqlmapper namespace="org.r3.db.system.site.SiteMapper" >
 
-  <select id="selectBySite" resultMap="BaseResultMap" parameterType="map" >
+  <select id="selectBy" parameterType="map" >
     select * from ${.tableName}
     <where> 
 
@@ -148,34 +169,26 @@ func TestWhereChoose01(t *testing.T) {
 		t.Fatal(err)
 	} else {
 
-		wanted = "select * from r3_site where (f5 = ?)"
+		wanted = "select * from table_name where (f5 = ?)"
 		mapp := map[string]interface{}{
 			"field5":    "field5_value",
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
-		wanted = "select * from r3_site where (otherwise...)"
+		wanted = "select * from table_name where (otherwise...)"
 		mapp = map[string]interface{}{
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
 	}
 }
@@ -183,7 +196,7 @@ func TestWhereChoose01(t *testing.T) {
 var paramPlaceHolderXML = []byte(`
 <sqlmapper namespace="org.r3.db.system.site.SiteMapper" >
 
-  <select id="selectBySite" resultMap="BaseResultMap" parameterType="map" >
+  <select id="selectBy"  parameterType="map" >
     select * from ${.tableName}
     <where> 
       <trim  prefixOverrides="and" >
@@ -202,42 +215,34 @@ func TestParamStyle(t *testing.T) {
 	var sqlStmt MappedStatement
 	var wanted string
 
-	wanted = "select * from r3_site where f1 = ?"
+	wanted = "select * from table_name where f1 = ?"
 	if m, err := NewMapper(string(paramPlaceHolderXML), WithBindStyle(BINDSTYLE_QUESTION)); err != nil {
 		t.Fatal(err)
 	} else {
 		mapp := map[string]interface{}{
 			"field1":    "field1_value",
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 	}
 
-	wanted = "select * from r3_site where f1 = S1"
+	wanted = "select * from table_name where f1 = $1"
 	if m, err := NewMapper(string(paramPlaceHolderXML), WithBindStyle(BINDSTYLE_DOLLAR)); err != nil {
 		t.Fatal(err)
 	} else {
 		mapp := map[string]interface{}{
 			"field1":    "field1_value",
-			"tableName": "r3_site",
+			"tableName": "table_name",
 		}
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 	}
 
 }
@@ -273,7 +278,7 @@ var filterCriteriaXML = []byte(`
     </where>
   </sql>
 
-  <select id='selectBySite' resultMap='BaseResultMap' parameterType='map' >
+  <select id='selectBy'  parameterType='map' >
     select * from ${.tableName}
     <include refid='Filter_Where_Clause' />    
   </select>
@@ -318,7 +323,7 @@ func TestFilterCriteria(t *testing.T) {
 	var sqlStmt MappedStatement
 	var wanted string
 
-	wanted = "select * from r3_site where f1 = ?"
+	wanted = "select * from table_name where f1 = ?"
 	if m, err := NewMapper(string(filterCriteriaXML), WithBindStyle(BINDSTYLE_QUESTION)); err != nil {
 		t.Fatal(err)
 	} else {
@@ -331,20 +336,16 @@ func TestFilterCriteria(t *testing.T) {
 		var mapp map[string]interface{}
 		mapp = map[string]interface{}{
 			"field1":    "field1_value",
-			"tableName": "r3_site",
+			"tableName": "table_name",
 			"filter":    f.Build(),
 		}
 
-		wanted = "select * from r3_site where (My_Condition = 71 and site = ? and parentSite in (?, ?, ?))"
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		wanted = "select * from table_name where (My_Condition = 71 and site = ? and parentSite in (?, ?, ?))"
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
 		f = NewFilterBuilder()
 		f.Or().And(Criterion{Type: NoValue, Condition: "My_Condition = 71"})
@@ -352,19 +353,15 @@ func TestFilterCriteria(t *testing.T) {
 		f.Or().And(Criterion{Type: SingleValue, Condition: "parentSite in", Value: [3]string{"s1", "s2", "s3"}})
 
 		mapp = map[string]interface{}{
-			"tableName": "r3_site",
+			"tableName": "table_name",
 			"filter":    f.Build(),
 		}
-		wanted = "select * from r3_site where (My_Condition = 71) or (site = ?) or (parentSite in (?, ?, ?))"
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		wanted = "select * from table_name where (My_Condition = 71) or (site = ?) or (parentSite in (?, ?, ?))"
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
 		/*
 		 * Costruzione di un Filter ipotizzando delle API piu' immediate.
@@ -375,19 +372,15 @@ func TestFilterCriteria(t *testing.T) {
 		f1.Or().AndParentSiteIn([]string{"s4", "s5", "s6"})
 
 		mapp = map[string]interface{}{
-			"tableName": "r3_site",
+			"tableName": "table_name",
 			"filter":    f1.Build(),
 		}
-		wanted = "select * from r3_site where (field is not null) or (site = ?) or (parentSite in ( ? , ? , ? ))"
-		sqlStmt, err = m.GetMappedStatement("selectBySite", mapp)
-		if err != nil {
-			t.Fatal(err)
-		}
+		wanted = "select * from table_name where (field is not null) or (site = ?) or (parentSite in ( ? , ? , ? ))"
+		sqlStmt, err = m.GetMappedStatement("selectBy", mapp)
+		require.NoError(t, err)
 
 		t.Log("Statement", sqlStmt.GetStatement(), "Params", fmt.Sprint(sqlStmt.GetParams()))
-		if sqlStmt.GetStatement() != wanted {
-			t.Error(fmt.Sprintf("Result doesn't match wanted: result = %q wanted: %q", sqlStmt.GetStatement(), wanted))
-		}
+		require.Equal(t, wanted, sqlStmt.GetStatement())
 
 	}
 
@@ -409,13 +402,13 @@ func TestFilterAPI(t *testing.T) {
 var configMapper = []byte(`
 <sqlmapper namespace="org.r3.db.test_mapper" >
 
-  <select id="selectBySite" resultMap="BaseResultMap" >
-    select s.site from r3_site s
+  <select id="selectBy" >
+    select s.site from table_name s
     where site = #{.site,jdbcType=VARCHAR}
   </select>
 
-  <select id="selectByUser" resultMap="BaseResultMap" >
-    select * from r3_user s
+  <select id="selectBy2"  >
+    select * from table_name s
     where nickname = #{.nickname,jdbcType=VARCHAR}
   </select>
 

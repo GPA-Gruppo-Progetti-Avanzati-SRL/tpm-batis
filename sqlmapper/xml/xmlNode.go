@@ -112,12 +112,14 @@ func (e *ChardataNode) Clone() MapperNode {
 func (e *ChardataNode) String() string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("%s - %s ", e.XMLName.Local, e.Chardata))
-	sb.WriteString(" Vars: ")
-	for _, v := range e.DollarVariables {
-		sb.WriteString(v.String())
-	}
-	for _, v := range e.DashVariables {
-		sb.WriteString(v.String())
+	if len(e.DollarVariables) > 0 || len(e.DashVariables) > 0 {
+		sb.WriteString(" Vars: ")
+		for _, v := range e.DollarVariables {
+			sb.WriteString(v.String())
+		}
+		for _, v := range e.DashVariables {
+			sb.WriteString(v.String())
+		}
 	}
 	return sb.String()
 }
@@ -285,6 +287,53 @@ func (e *ForEachNode) Clone() MapperNode {
 }
 
 func (e *ForEachNode) Walk(depth int, visitFuncs ...WalkOption) (bool, error) {
+
+	vfs := WalkOptions{Ante: func(depth int, me MapperNode) (bool, error) { return true, nil }, After: func(depth int, me MapperNode) (bool, error) { return true, nil }}
+	for _, wv := range visitFuncs {
+		wv(&vfs)
+	}
+
+	if b, e := vfs.Ante(depth, e); !b || e != nil {
+		return b, e
+	}
+
+	for _, n := range e.Nodes {
+		if b, e := n.Walk(depth+1, visitFuncs...); !b || e != nil {
+			return b, e
+		}
+	}
+
+	if b, e := vfs.After(depth, e); !b || e != nil {
+		return b, e
+	}
+
+	return true, nil
+}
+
+//
+// SetNode
+//
+type SetNode struct {
+	MapperNodeBase
+}
+
+func (e *SetNode) String() string {
+	return fmt.Sprintf("%s", e.XMLName.Local)
+}
+
+func (e *SetNode) Clone() MapperNode {
+	ch2 := *e
+	ch2.Nodes = make([]MapperNode, 0, len(e.Nodes))
+	for _, n := range e.Nodes {
+		ch2.Nodes = append(ch2.Nodes, n.Clone())
+	}
+	return &ch2
+}
+
+func (e *SetNode) SetAttribute(attr xml.Attr) {
+}
+
+func (e *SetNode) Walk(depth int, visitFuncs ...WalkOption) (bool, error) {
 
 	vfs := WalkOptions{Ante: func(depth int, me MapperNode) (bool, error) { return true, nil }, After: func(depth int, me MapperNode) (bool, error) { return true, nil }}
 	for _, wv := range visitFuncs {

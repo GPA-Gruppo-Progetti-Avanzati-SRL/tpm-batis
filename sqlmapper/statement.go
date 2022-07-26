@@ -175,6 +175,19 @@ func WithBuildTemplateTextFunctionAnte(ts *templateBuilderStack) xml.WalkOption 
 				tb.sb.WriteString(fmt.Sprintf("{{define \"%s\"}}\n", tmplId))
 				ts.stringBuilderStack = append(ts.stringBuilderStack, &tb)
 
+			case *xml.SetNode:
+				ts.tmplSequence++
+				tmplId := fmt.Sprintf("%s_%d", ts.tmpBaseId, ts.tmplSequence)
+
+				ts.stringBuilderStack[topStack].sb.WriteString("{{ $ctx := setCtx $.mctx \"data\" . }}\n")
+				ts.stringBuilderStack[topStack].sb.WriteString(fmt.Sprintf("{{ $var := tmpl \"%s\" $ctx }}\n", tmplId))
+				ts.stringBuilderStack[topStack].sb.WriteString(fmt.Sprintf("{{ set $var | print }}\n"))
+
+				tb := templateBuilder{}
+				tb.tmplId = tmplId
+				tb.sb.WriteString(fmt.Sprintf("{{define \"%s\"}}\n", tmplId))
+				ts.stringBuilderStack = append(ts.stringBuilderStack, &tb)
+
 			case *xml.ChardataNode:
 				s := e.Chardata
 				for _, dollar := range e.DollarVariables {
@@ -259,6 +272,12 @@ func WithBuildTemplateTextFunctionPost(ts *templateBuilderStack) xml.WalkOption 
 				ts.accumulator.WriteRune('\n')
 				ts.stringBuilderStack = ts.stringBuilderStack[:topStack]
 
+			case *xml.SetNode:
+				ts.stringBuilderStack[topStack].sb.WriteString(fmt.Sprintf("{{end}}\n"))
+				ts.accumulator.WriteString(ts.stringBuilderStack[topStack].sb.String())
+				ts.accumulator.WriteRune('\n')
+				ts.stringBuilderStack = ts.stringBuilderStack[:topStack]
+
 			case *xml.IfNode:
 				ts.stringBuilderStack[topStack].sb.WriteString("{{end}}\n")
 
@@ -312,6 +331,16 @@ func newTemplate(xmlMapper *xml.MapperRootNode, elementId string, mo mapperOptio
 				}
 
 				return ""
+			},
+			"set": func(aString string) string {
+				t := strings.TrimSpace(aString)
+				t = strings.TrimSuffix(t, ",")
+
+				if t != "" {
+					return "set " + t
+				}
+
+				return t
 			},
 			"where": func(aString string) string {
 				t := strings.TrimSpace(aString)
