@@ -14,11 +14,13 @@ const (
 type FilterBuilder struct {
 	orListOfCriteria []Criteria
 	orderBy          string
+	limit            int
 }
 
 type Filter struct {
 	OrListOfCriteria []Criteria
 	OrderBy          string
+	Limit            int
 }
 
 type Criteria struct {
@@ -40,6 +42,11 @@ func (f *FilterBuilder) OrderBy(orderBy string) *FilterBuilder {
 	return f
 }
 
+func (f *FilterBuilder) Limit(n int) *FilterBuilder {
+	f.limit = n
+	return f
+}
+
 func (f *FilterBuilder) Or() *FilterBuilder {
 	f.orListOfCriteria = append(f.orListOfCriteria, Criteria{})
 	return f
@@ -57,7 +64,7 @@ func (f *FilterBuilder) And(c Criterion) *FilterBuilder {
 
 func (f *FilterBuilder) Build() Filter {
 
-	filter := Filter{OrderBy: f.orderBy}
+	filter := Filter{OrderBy: f.orderBy, Limit: f.limit}
 	for _, criteria := range f.orListOfCriteria {
 		if len(criteria.AndListOfCriterion) > 0 {
 			filter.OrListOfCriteria = append(filter.OrListOfCriteria, criteria)
