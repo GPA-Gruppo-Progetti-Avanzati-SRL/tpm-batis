@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper/xml"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
+	"github.com/rs/zerolog/log"
 )
 
 type Mapper interface {
@@ -167,6 +168,16 @@ func (ms *mappedStatement) GetParams() []interface{} {
 	return qparams
 }
 
+func (ms *mappedStatement) LogInfo() {
+
+	logEvent := log.Trace().Str("sql", ms.stmt)
+	for i, p := range ms.params {
+		logEvent.Str(fmt.Sprintf("$%d", i), fmt.Sprint(p))
+	}
+
+	logEvent.Msg("tmp-batis statement")
+}
+
 func (ms *mappedStatement) GetResultMap() ResultMap {
 	return ms.resultMap
 }
@@ -184,7 +195,9 @@ func (m *mapper) GetMappedStatement(statementId string, params map[string]interf
 		return nil, err
 	}
 
-	return &mappedStatement{statement, stmtParams, s.GetResultMap()}, nil
+	ms := &mappedStatement{statement, stmtParams, s.GetResultMap()}
+	ms.LogInfo()
+	return ms, nil
 }
 
 /*func (m *sqlmapper)ExecuteQuery2(statementId string, params ...interface{}) error {
