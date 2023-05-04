@@ -1,0 +1,28 @@
+package {{ .Schema.PackageName }}
+
+import (
+{{range $pkg := .GoPackageImports "entity" }}
+   "{{$pkg}}"
+{{- end}}
+)
+
+const (
+{{- range $i, $a := .Attributes}}
+{{ $a.GoAttributeName }}FieldIndex = {{ $i }}
+{{- end}}
+)
+
+type {{.Schema.Properties.StructName}} struct {
+{{- range $a := .Attributes}}
+{{ $a.GoAttributeName }} {{ $a.GoAttributeType }}  `db:"{{ $a.DbAttributeName }}"`
+{{- end}}
+}
+
+{{ if .Schema.HasPrimaryKey }}
+type PrimaryKey struct {
+{{- range $a := .PkAttributes}}
+{{ $a.GoAttributeName }} {{ $a.GoAttributeType }}  `db:"{{ $a.DbAttributeName }}"`
+{{- end}}
+}
+{{ end }}
+

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper/xml"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 	"github.com/rs/zerolog/log"
 
 	"reflect"

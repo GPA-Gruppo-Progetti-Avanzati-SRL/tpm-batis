@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqlmapper namespace="{{ .Schema.PackageName }}.{{ .Schema.Properties.StructName }}" >
+
+    <insert id="insert">
+        INSERT INTO {{ .Schema.Properties.TableName }} ({{- range $i, $a := .Attributes -}}{{ if $i }},{{- end }} {{ $a.DbAttributeName }}{{- end}})
+        VALUES
+        (
+        {{- range $i, $a := .Attributes}}
+        {{ if $i }},{{ end }} #{.record.{{ $a.GoAttributeName }}}
+        {{- end}}
+        )
+    </insert>
+
+    <select id='select'  >
+        select  {{- range $i, $a := .Attributes}} {{ if $i }},{{ end }} {{ $a.DbAttributeName }} {{- end}}
+        from {{ .Schema.Properties.TableName }}
+        <include refid='filter_where_clause' />
+
+        <if test=".filter.OrderBy" >
+            order by ${.filter.OrderBy}
+        </if>
+
+    </select>
+
+    <select id='count'  >
+        select count(*)
+        from {{ .Schema.Properties.TableName }}
+        <include refid='filter_where_clause' />
+
+        <if test=".filter.OrderBy" >
+            order by ${.filter.OrderBy}
+        </if>
+    </select>
+
+    <delete id='delete'  >
+        delete
+        from {{ .Schema.Properties.TableName }}
+        <include refid='filter_where_clause' />
+    </delete>
+
+    {{ if .Schema.HasPrimaryKey }}
+    <update id="deleteByPrimaryKey" >
+        delete from {{ .Schema.Properties.TableName }}
+        where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
+    </update>
+    {{- end }}
+
+    <sql id='filter_where_clause' >
+        <where >
+            <foreach collection='.filter.OrListOfCriteria' item='criteria' separator='or' >
+                <trim prefix='(' suffix=')' prefixOverrides='and' >
+                    <foreach collection='.criteria.AndListOfCriterion' item='criterion' >
+                        <choose>
+                            <when test='eq .criterion.Type "NoValue"' >
+                                and ${.criterion.Condition}
+                            </when>
+                            <when test='eq .criterion.Type "SingleValue"' >
+                                and ${.criterion.Condition} #{.criterion.Value}
+                            </when>
+                            <when test='eq .criterion.Type "BetweenValue"' >
+                                and ${.criterion.Condition} #{.criterion.Value} and #{.criterion.secondValue}
+                            </when>
+                            <when test='eq .criterion.Type "ListValue"' >
+                                and ${.criterion.Condition}
+                                <foreach collection='.criterion.Value' item='listItem' open='(' close=')' separator=',' >
+                                    #{.listItem}
+                                </foreach>
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </foreach>
+        </where>
+    </sql>
+
+    {{ if .Schema.HasPrimaryKey }}
+    <update id="updateByPrimaryKey" >
+        update {{ .Schema.Properties.TableName }}
+        <set >
+            {{- range $a := .Attributes}}{{ if  $a.GetDefinition.WithUpdate }}
+            <if test='.record.Is{{ $a.GoAttributeName }}Dirty' >
+                {{ $a.DbAttributeName }} = #{.record.{{ $a.GoAttributeName  }}},
+            </if>
+            {{ end }}{{ end }}
+        </set>
+        where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
+    </update>
+    {{- end }}
+
+   <update id="update" >
+        update {{ .Schema.Properties.TableName }}
+        <set >
+            {{- range $a := .Attributes}}{{ if  $a.GetDefinition.WithUpdate }}
+            <if test='.record.Is{{ $a.GoAttributeName }}Dirty' >
+                {{ $a.DbAttributeName }} = #{.record.{{ $a.GoAttributeName  }}},
+            </if>
+            {{ end }}{{ end }}
+        </set>
+        <include refid='filter_where_clause' />
+    </update>
+
+</sqlmapper>

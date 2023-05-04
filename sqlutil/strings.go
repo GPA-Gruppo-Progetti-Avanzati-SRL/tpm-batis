@@ -1,4 +1,4 @@
-package batisutil
+package sqlutil
 
 import "fmt"
 

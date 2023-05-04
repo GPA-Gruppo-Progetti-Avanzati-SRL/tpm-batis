@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqlmapper namespace="person.Entity" >
+
+    <insert id="insert">
+        INSERT INTO person ( id, lastname, nickname, age)
+        VALUES
+        (
+         #{.record.Id}
+        , #{.record.Lastname}
+        , #{.record.Nickname}
+        , #{.record.Age}
+        )
+    </insert>
+
+    <select id='select'  >
+        select  id , lastname , nickname , age
+        from person
+        <include refid='filter_where_clause' />
+
+        <if test=".filter.OrderBy" >
+            order by ${.filter.OrderBy}
+        </if>
+
+    </select>
+
+    <select id='count'  >
+        select count(*)
+        from person
+        <include refid='filter_where_clause' />
+
+        <if test=".filter.OrderBy" >
+            order by ${.filter.OrderBy}
+        </if>
+    </select>
+
+    <delete id='delete'  >
+        delete
+        from person
+        <include refid='filter_where_clause' />
+    </delete>
+
+    
+    <update id="deleteByPrimaryKey" >
+        delete from person
+        where  id = #{.pk.Id} 
+    </update>
+
+    <sql id='filter_where_clause' >
+        <where >
+            <foreach collection='.filter.OrListOfCriteria' item='criteria' separator='or' >
+                <trim prefix='(' suffix=')' prefixOverrides='and' >
+                    <foreach collection='.criteria.AndListOfCriterion' item='criterion' >
+                        <choose>
+                            <when test='eq .criterion.Type "NoValue"' >
+                                and ${.criterion.Condition}
+                            </when>
+                            <when test='eq .criterion.Type "SingleValue"' >
+                                and ${.criterion.Condition} #{.criterion.Value}
+                            </when>
+                            <when test='eq .criterion.Type "BetweenValue"' >
+                                and ${.criterion.Condition} #{.criterion.Value} and #{.criterion.secondValue}
+                            </when>
+                            <when test='eq .criterion.Type "ListValue"' >
+                                and ${.criterion.Condition}
+                                <foreach collection='.criterion.Value' item='listItem' open='(' close=')' separator=',' >
+                                    #{.listItem}
+                                </foreach>
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </foreach>
+        </where>
+    </sql>
+
+    
+    <update id="updateByPrimaryKey" >
+        update person
+        <set >
+            <if test='.record.IsLastnameDirty' >
+                lastname = #{.record.Lastname},
+            </if>
+            
+            <if test='.record.IsNicknameDirty' >
+                nickname = #{.record.Nickname},
+            </if>
+            
+            <if test='.record.IsAgeDirty' >
+                age = #{.record.Age},
+            </if>
+            
+        </set>
+        where  id = #{.pk.Id} 
+    </update>
+
+   <update id="update" >
+        update person
+        <set >
+            <if test='.record.IsLastnameDirty' >
+                lastname = #{.record.Lastname},
+            </if>
+            
+            <if test='.record.IsNicknameDirty' >
+                nickname = #{.record.Nickname},
+            </if>
+            
+            <if test='.record.IsAgeDirty' >
+                age = #{.record.Age},
+            </if>
+            
+        </set>
+        <include refid='filter_where_clause' />
+    </update>
+
+</sqlmapper>

@@ -1,9 +1,10 @@
-package xml
+package config_test
 
 import (
 	"errors"
 	"fmt"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper/xml/config"
 	"testing"
 )
 
@@ -40,7 +41,7 @@ func TestConfig(t *testing.T) {
 		return nil, errors.New(fmt.Sprintf("ResourceNotFound: %s", resourceName))
 	}
 
-	cfg, err := NewConfig(util.ResourceResolverFunc(resolver), "gobatiscfg.xml")
+	cfg, err := config.NewConfig(sqlmapper.ResourceResolverFunc(resolver), "gobatiscfg.xml")
 	if err != nil {
 		t.Fatal(err)
 	}

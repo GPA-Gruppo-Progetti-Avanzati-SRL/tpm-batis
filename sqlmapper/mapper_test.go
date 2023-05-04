@@ -2,7 +2,6 @@ package sqlmapper
 
 import (
 	"fmt"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -423,6 +422,7 @@ var configFileResource = []byte(`
 </configuration> 
 `)
 
+/*
 func TestMapperRegistry(t *testing.T) {
 
 	filn, ln, fun := util.GetExecutingFunctionInfo()
@@ -431,9 +431,10 @@ func TestMapperRegistry(t *testing.T) {
 	registry := make(map[string][]byte)
 	registry["resources/goBatisCfg.xml"] = configFileResource
 	registry["resources/sqlmapper.xml"] = configMapper
-	_, err := NewRegistry(util.NewFileRegistryCascadeResolver(registry), "resources/goBatisCfg.xml")
+	_, err := NewRegistry(NewFileRegistryCascadeResolver(registry), "resources/goBatisCfg.xml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 }
+*/

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper/xml"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
 	"github.com/rs/zerolog/log"
 )
 
@@ -63,28 +62,30 @@ func (r *mapperRegistry) AddMapper(aName string, m Mapper) error {
 	return nil
 }
 
-func NewRegistry(resolver util.ResourceResolver, aResourceConfigName string) (MapperRegistry, error) {
+/*
+func NewRegistry(resolver ResourceResolver, aResourceConfigName string) (MapperRegistry, error) {
 
-	sf := &mapperRegistry{registry: make(map[string]Mapper)}
-	cfg, err := xml.NewConfig(resolver, aResourceConfigName)
-	if err != nil {
-		return sf, err
-	}
+		sf := &mapperRegistry{registry: make(map[string]Mapper)}
+		cfg, err := config.NewConfig(resolver, aResourceConfigName)
+		if err != nil {
+			return sf, err
+		}
 
-	if mappersConfig, err := cfg.GetMappersConfig(); err != nil {
-		return sf, err
-	} else {
-		for _, mp := range mappersConfig {
-			if m, e := NewMapperFromParsedXML(mp); e == nil {
-				sf.registry[m.GetNamespace()] = m
-			} else {
-				return sf, e
+		if mappersConfig, err := cfg.GetMappersConfig(); err != nil {
+			return sf, err
+		} else {
+			for _, mp := range mappersConfig {
+				if m, e := NewMapperFromParsedXML(mp); e == nil {
+					sf.registry[m.GetNamespace()] = m
+				} else {
+					return sf, e
+				}
 			}
 		}
-	}
 
-	return sf, nil
-}
+		return sf, nil
+	}
+*/
 
 func NewMapper(mapperSource string, opts ...Option) (Mapper, error) {
 	if mapperXmlTree, err := xml.ParseMapper(string(mapperSource)); err != nil {

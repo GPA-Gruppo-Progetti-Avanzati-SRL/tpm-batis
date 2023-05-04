@@ -1,0 +1,84 @@
+package {{ .Schema.PackageName }}_test
+
+import (
+	"{{ .Schema.Properties.Package }}"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqllks"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
+	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/require"
+	"os"
+	"strconv"
+	"testing"
+)
+
+const (
+	SQLHOSTENVVAR   = "SQL_HOST"
+	SQLDBENVVAR     = "SQL_DB"
+	SQLUSERENVVAR   = "SQL_USER"
+	SQLPASSWDENVVAR = "SQL_PASSWD"
+	SQLPORTENVVAR   = "SQL_PORT"
+)
+
+func TestMain(m *testing.M) {
+
+	p, err := strconv.Atoi(os.Getenv(SQLPORTENVVAR))
+	if err != nil {
+		panic(err)
+	}
+
+	cfg := sqllks.Config{
+		ServerName:      "default",
+		ServerType:      "pq",
+		Host:            os.Getenv(SQLHOSTENVVAR),
+		Port:            p,
+		DbName:          os.Getenv(SQLDBENVVAR),
+		UserName:        os.Getenv(SQLUSERENVVAR),
+		Password:        os.Getenv(SQLPASSWDENVVAR),
+		SslMode:         false,
+		EnableMigration: false,
+		MaxOpenConns:    0,
+		MaxIdleConns:    0,
+		ConnMaxLifetime: 0,
+		ConnMaxIdleTime: 0,
+	}
+
+	_, err = sqllks.Initialize([]sqllks.Config{cfg})
+	if err != nil {
+		panic(err)
+	}
+
+	exitVal := m.Run()
+	os.Exit(exitVal)
+}
+
+func Test{{.Schema.Properties.StructName}}(t *testing.T) {
+	lks, err := sqllks.GetLinkedService("default")
+	require.NoError(t, err)
+
+	sqlDb, err := lks.DB()
+	require.NoError(t, err)
+	sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDDL)
+	defer sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDropDDL)
+
+	p := {{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}{
+	    /*  complete as needed */
+        {{- range $a := .Attributes}}
+           {{ $a.GoAttributeName }}: {{ $a.GoSampleValue }},
+        {{- end}}
+	}
+
+	_, err = {{ .Schema.PackageName }}.Insert(sqlDb, &p)
+	require.NoError(t, err)
+
+	uopts := []{{ .Schema.PackageName }}.UpdateOp{
+	    {{ $pkg := .Schema.PackageName }}
+	     {{ $pkg }}.UpdateWithRowsAffectedWanted(1),
+	    /*  complete as needed */
+	    {{- range $a := .Attributes}}{{ if $a.GetDefinition.WithUpdate }}
+               {{ $pkg }}.UpdateWith{{ $a.GoAttributeName }}({{ $a.GoSampleValue }}),
+        {{- end}}{{- end}}
+	}
+
+	_, err = {{ .Schema.PackageName }}.Update(sqlDb, {{ .Schema.PackageName }}.NewFilterBuilder().Build(), uopts...)
+	require.NoError(t, err)
+}

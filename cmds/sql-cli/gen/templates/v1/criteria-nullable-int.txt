@@ -1,0 +1,12 @@
+{{ define "criteria-nullable-int" }}
+{{ $a := .Attr }}
+func (ub *FilterBuilder) And{{ $a.GoAttributeName }}EqualTo(a{{ $a.GoAttributeName  }} {{ $a.GoAttributeType }})  *FilterBuilder {
+    ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "{{ $a.DbAttributeName }} = ", Value: a{{ $a.GoAttributeName }}})
+	return ub
+}
+
+func (ub *FilterBuilder) And{{ $a.GoAttributeName }}IsNull()  *FilterBuilder {
+    ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.NoValue, Condition: "{{ $a.DbAttributeName }} is null "})
+	return ub
+}
+{{ end }}

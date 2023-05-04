@@ -1,4 +1,4 @@
-package batisutil
+package sqlutil
 
 import (
 	"database/sql"
@@ -21,4 +21,9 @@ func ToSqlNullString(s string) sql.NullString {
 	}
 
 	return sql.NullString{String: s, Valid: true}
+}
+
+// ToSqlNullInt32 transforms an int into a sql.NullInt32.
+func ToSqlNullInt32(s int32) sql.NullInt32 {
+	return sql.NullInt32{Int32: s, Valid: true}
 }

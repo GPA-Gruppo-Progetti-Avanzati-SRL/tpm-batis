@@ -1,4 +1,4 @@
-package util
+package sqlutil
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 
 var sqlDriverNamesByType map[reflect.Type]string
 
-// The database/sql API doesn't provide a way to get the registry name for
+// SQLDriverToDriverName The database/sql API doesn't provide a way to get the registry name for
 // a driver from the driver type.
 func SQLDriverToDriverName(driver driver.Driver) string {
 

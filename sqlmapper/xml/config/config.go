@@ -1,17 +1,18 @@
-package xml
+package config
 
 import (
 	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/system/util"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
+	xml2 "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper/xml"
 )
 
 type Config struct {
 	XMLName        xml.Name
 	ListOfMappers  MappersConfig `xml:"mappers"`
-	mapperRegistry map[string]*MapperRootNode
+	mapperRegistry map[string]*xml2.MapperRootNode
 }
 
 type MappersConfig struct {
@@ -23,7 +24,7 @@ type MapperConfig struct {
 	Resource string   `xml:"resource,attr"`
 }
 
-func NewConfig(resolver util.ResourceResolver, aResourceName string) (*Config, error) {
+func NewConfig(resolver sqlmapper.ResourceResolver, aResourceName string) (*Config, error) {
 
 	var cfg *Config
 
@@ -34,7 +35,7 @@ func NewConfig(resolver util.ResourceResolver, aResourceName string) (*Config, e
 		buf := bytes.NewBuffer(cfgFileContent)
 		dec := xml.NewDecoder(buf)
 
-		cfg = &Config{mapperRegistry: make(map[string]*MapperRootNode)}
+		cfg = &Config{mapperRegistry: make(map[string]*xml2.MapperRootNode)}
 		err := dec.Decode(cfg)
 		if err != nil {
 			return nil, err
@@ -44,7 +45,7 @@ func NewConfig(resolver util.ResourceResolver, aResourceName string) (*Config, e
 			if mc, err := resolver.GetResource(mi.Resource); err != nil {
 				return nil, err
 			} else {
-				if me, err := ParseMapper(string(mc)); err != nil {
+				if me, err := xml2.ParseMapper(string(mc)); err != nil {
 					return nil, err
 				} else {
 					cfg.mapperRegistry[me.Namespace] = me
@@ -56,7 +57,7 @@ func NewConfig(resolver util.ResourceResolver, aResourceName string) (*Config, e
 	return cfg, nil
 }
 
-func (c *Config) GetMapperConfig(namespace string) (*MapperRootNode, error) {
+func (c *Config) GetMapperConfig(namespace string) (*xml2.MapperRootNode, error) {
 	if me, ok := c.mapperRegistry[namespace]; ok {
 		return me, nil
 	}
@@ -64,13 +65,13 @@ func (c *Config) GetMapperConfig(namespace string) (*MapperRootNode, error) {
 	return nil, errors.New(fmt.Sprintf("Mapper Not Found: %s", namespace))
 }
 
-func (c *Config) GetMappersConfig() ([]*MapperRootNode, error) {
+func (c *Config) GetMappersConfig() ([]*xml2.MapperRootNode, error) {
 
 	if len(c.mapperRegistry) == 0 {
 		return nil, nil
 	}
 
-	list := make([]*MapperRootNode, 0, len(c.mapperRegistry))
+	list := make([]*xml2.MapperRootNode, 0, len(c.mapperRegistry))
 	for _, me := range c.mapperRegistry {
 		list = append(list, me)
 	}

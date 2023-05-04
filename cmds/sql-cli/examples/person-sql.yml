@@ -1,0 +1,43 @@
+name: person
+properties:
+  folder-path: "./person"
+  struct-name: Entity
+  table-name: "person"
+  package: "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/examples/person"
+ddl: |
+  id varchar(30) primary key,
+  lastname  varchar(30) not null,
+  nickname  varchar(30),
+  age int
+fields:
+  - name: id
+    db-name: id
+    primary-key: true
+    type: string
+    nullable: false
+    max-length: 20
+    with-criterion: true
+    sample-value: user-id
+  - name: lastname
+    db-name: lastname
+    type: string
+    nullable: false
+    max-length: 20
+    with-criterion: true
+    with-update: true
+    sample-value: paperino
+  - name: nickname
+    db-name: nickname
+    type: string
+    nullable: true
+    max-length: 20
+    with-criterion: true
+    with-update: true
+    sample-value: paolino
+  - name: age
+    db-name: age
+    type: int
+    nullable: true
+    with-criterion: true
+    with-update: true
+    sample-value: sqlutil.ToSqlNullInt32(61)

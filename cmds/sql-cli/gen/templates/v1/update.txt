@@ -1,0 +1,154 @@
+package {{ .Schema.PackageName }}
+
+import (
+{{range $pkg := .GoPackageImports "update" }}
+   "{{$pkg}}"
+{{- end}}
+  "fmt"
+  "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
+  "github.com/jmoiron/sqlx"
+  "github.com/bits-and-blooms/bitset"
+  "github.com/rs/zerolog/log"
+)
+
+type UpdateData struct {
+       flagsDirty  bitset.BitSet
+       rowsAffectedWanted int64
+       {{- range $a := .Attributes}}
+       {{ $a.GoAttributeName }} {{ $a.GoAttributeType }}
+       {{- end}}
+}
+
+func (uda *UpdateData) BuildWithFilter(f sqlmapper.Filter) map[string]interface{} {
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"record": uda,
+		"filter": f,
+	}
+
+	return mapp
+}
+
+func (uda *UpdateData) BuildWithPrimaryKey(pk PrimaryKey) map[string]interface{} {
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"record": uda,
+		"pk": pk,
+	}
+
+	return mapp
+}
+
+type UpdateOp func(u *UpdateData)
+
+func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
+	return func(u *UpdateData) {
+		u.rowsAffectedWanted = p
+	}
+}
+
+{{range $a := .Attributes}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "string") }}
+{{ template "update-string" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "int") }}
+{{ template "update-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-string") }}
+{{ template "update-nullable-string" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-int") }}
+{{ template "update-nullable-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  $a.GetDefinition.WithUpdate }}
+func (uda *UpdateData) Is{{ $a.GoAttributeName }}Dirty() bool {
+    return uda.flagsDirty.Test({{ $a.GoAttributeName }}FieldIndex)
+}
+{{- end -}}
+{{end}}
+
+
+func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
+
+    const semLogContext = "{{ .Schema.PackageName }}::update"
+	if len(uops) == 0 {
+		return 0, nil
+	}
+
+	var err error
+
+	ud := UpdateData{rowsAffectedWanted:-1}
+	for _, o := range uops {
+		o(&ud)
+	}
+
+	mapp := ud.BuildWithFilter(f)
+	sqlStmt, err := mapper.GetMappedStatement("update", mapp)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := r.RowsAffected()
+	if err != nil {
+		log.Warn().Err(err).Msg(semLogContext)
+		return 0, err
+	}
+
+    if ud.rowsAffectedWanted >= 0 {
+        if n != ud.rowsAffectedWanted {
+            err = fmt.Errorf("mismatch between number of rows affected (%d) and wanted (%d)", n, ud.rowsAffectedWanted)
+            log.Error().Err(err).Msg(semLogContext)
+            return 0, err
+        }
+    }
+
+	return int(n), nil
+}
+
+func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, error) {
+
+    const semLogContext = "{{ .Schema.PackageName }}::update-by-primary-key"
+
+	if len(uops) == 0 {
+		return 0, nil
+	}
+
+	var err error
+
+	ud := UpdateData{rowsAffectedWanted:-1}
+	for _, o := range uops {
+		o(&ud)
+	}
+
+	mapp := ud.BuildWithPrimaryKey(pk)
+	sqlStmt, err := mapper.GetMappedStatement("updateByPrimaryKey", mapp)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := r.RowsAffected()
+	if err != nil {
+		log.Warn().Err(err).Msg(semLogContext)
+		return 0, err
+	}
+
+    if ud.rowsAffectedWanted >= 0 {
+        if n != ud.rowsAffectedWanted {
+            err = fmt.Errorf("mismatch between number of rows affected (%d) and wanted (%d)", n, ud.rowsAffectedWanted)
+            log.Error().Err(err).Msg(semLogContext)
+            return 0, err
+        }
+    }
+
+	return int(n), nil
+}

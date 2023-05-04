@@ -1,0 +1,28 @@
+package {{ .Schema.PackageName }}
+
+import (
+	"github.com/rs/zerolog/log"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
+	_ "embed"
+)
+
+func init() {
+    const semLogContext = "{{ .Schema.PackageName }}::init"
+	log.Info().Msg(semLogContext)
+
+	_ = LoadMapper()
+}
+
+//go:embed mapper.xml
+var xmlMapper string
+var mapper sqlmapper.Mapper
+
+func LoadMapper() error {
+    const semLogContext = "{{ .Schema.PackageName }}::load-mapper"
+	var err error
+	if mapper, err = sqlmapper.NewMapper(xmlMapper, sqlmapper.WithBindStyle(sqlmapper.BINDSTYLE_DOLLAR)); err != nil {
+		log.Fatal().Err(err).Msg(semLogContext)
+	}
+
+	return nil
+}
