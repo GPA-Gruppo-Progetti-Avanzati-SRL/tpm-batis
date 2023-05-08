@@ -40,11 +40,23 @@ func (ub *FilterBuilder) Build() sqlmapper.Filter {
 {{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "int") }}
 {{ template "criteria-int" filterSubTemplateContext $a "*" }}
 {{- end -}}
+{{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "bool") }}
+{{ template "criteria-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "time") }}
+{{ template "criteria-time" filterSubTemplateContext $a "*" }}
+{{- end -}}
 {{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "nullable-string") }}
 {{ template "criteria-nullable-string" filterSubTemplateContext $a "*" }}
 {{- end -}}
 {{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "nullable-int") }}
 {{ template "criteria-nullable-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "nullable-bool") }}
+{{ template "criteria-nullable-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if and $a.GetDefinition.WithCriterion (eq $a.GetDefinition.Typ "nullable-time") }}
+{{ template "criteria-nullable-time" filterSubTemplateContext $a "*" }}
 {{- end -}}
 {{- end -}}
 

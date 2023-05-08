@@ -1,4 +1,4 @@
-package gen
+package attribute
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ type Attribute interface {
 	GoAttributeName() string
 	GoAttributeType() string
 	GoPackageImports() []string
-	GoSampleValue() string
+	GoSampleValue(pkg string) string
 
 	/*
 		GetName(qualified bool, prefixed bool) string
@@ -47,81 +47,26 @@ func (a AttributeImpl) GoAttributeType() string {
 	var s string
 	switch a.AttrDefinition.Typ {
 	case schema.AttributeTypeString:
-		s = "string"
+		s = fmt.Sprintf("Max%dText", a.GetDefinition().MaxLength)
 	case schema.AttributeTypeInt:
 		s = "int32"
+	case schema.AttributeTypeBool:
+		s = "bool"
+	case schema.AttributeTypeTime:
+		s = "time.Time"
 	case schema.AttributeTypeNullableString:
 		s = "sql.NullString"
 	case schema.AttributeTypeNullableInt:
 		s = "sql.NullInt32"
+	case schema.AttributeTypeNullableBool:
+		s = "sql.NullBool"
+	case schema.AttributeTypeNullableTime:
+		s = "sql.NullTime"
 	default:
 		log.Error().Str("type", string(a.AttrDefinition.Typ)).Msg(semLogContext + " unsupported attribute")
 	}
 
 	return s
-}
-
-type StringAttribute struct {
-	AttributeImpl
-}
-
-func (a StringAttribute) GoPackageImports() []string {
-	return nil
-}
-
-func (a StringAttribute) GoSampleValue() string {
-	if a.GetDefinition().SampleValue != "" {
-		return fmt.Sprintf("\"%s\"", a.GetDefinition().SampleValue)
-	}
-	return "\"hello\""
-}
-
-type NullStringAttribute struct {
-	AttributeImpl
-}
-
-func (a NullStringAttribute) GoPackageImports() []string {
-	return []string{"database/sql"}
-}
-
-func (a NullStringAttribute) GoSampleValue() string {
-	if a.GetDefinition().SampleValue != "" {
-		if strings.Contains(a.GetDefinition().SampleValue, "sql.Null") {
-			return a.GetDefinition().SampleValue
-		}
-		return fmt.Sprintf("sqlutil.ToSqlNullString(\"%s\")", a.GetDefinition().SampleValue)
-	}
-	return "sql.NullString{}"
-}
-
-type IntAttribute struct {
-	AttributeImpl
-}
-
-func (a IntAttribute) GoPackageImports() []string {
-	return nil
-}
-
-func (a IntAttribute) GoSampleValue() string {
-	if a.GetDefinition().SampleValue != "" {
-		return a.GetDefinition().SampleValue
-	}
-	return "12"
-}
-
-type NullIntAttribute struct {
-	AttributeImpl
-}
-
-func (a NullIntAttribute) GoPackageImports() []string {
-	return []string{"database/sql"}
-}
-
-func (a NullIntAttribute) GoSampleValue() string {
-	if a.GetDefinition().SampleValue != "" {
-		return a.GetDefinition().SampleValue
-	}
-	return "sql.NullInt32{}"
 }
 
 func NewAttribute(attrDefinition schema.Field) (Attribute, error) {
@@ -142,6 +87,14 @@ func NewAttribute(attrDefinition schema.Field) (Attribute, error) {
 			a = StringAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
 		}
 
+	case schema.AttributeTypeBool:
+		if attrDefinition.Nullable {
+			attrDefinition.Typ = schema.AttributeTypeNullableBool
+			a = NullBoolAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
+		} else {
+			a = BoolAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
+		}
+
 	case schema.AttributeTypeInt:
 		if attrDefinition.Nullable {
 			attrDefinition.Typ = schema.AttributeTypeNullableInt
@@ -150,6 +103,13 @@ func NewAttribute(attrDefinition schema.Field) (Attribute, error) {
 			a = IntAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
 		}
 
+	case schema.AttributeTypeTime:
+		if attrDefinition.Nullable {
+			attrDefinition.Typ = schema.AttributeTypeNullableTime
+			a = NullTimeAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
+		} else {
+			a = TimeAttribute{AttributeImpl{AttrDefinition: attrDefinition}}
+		}
 	default:
 		panic(fmt.Errorf("unsupported attribute type %s", attrDefinition.Typ))
 	}

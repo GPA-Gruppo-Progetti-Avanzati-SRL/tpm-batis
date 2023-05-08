@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/gen/attribute"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/schema"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/templateutil"
@@ -25,13 +26,21 @@ const (
 	TmplCollectionUpdate                 = "templates/%s/update.txt"
 	TmplCollectionUpdateString           = "templates/%s/update-string.txt"
 	TmplCollectionUpdateInt              = "templates/%s/update-int.txt"
+	TmplCollectionUpdateBool             = "templates/%s/update-bool.txt"
+	TmplCollectionUpdateTime             = "templates/%s/update-time.txt"
 	TmplCollectionUpdateNullableString   = "templates/%s/update-nullable-string.txt"
 	TmplCollectionUpdateNullableInt      = "templates/%s/update-nullable-int.txt"
+	TmplCollectionUpdateNullableBool     = "templates/%s/update-nullable-bool.txt"
+	TmplCollectionUpdateNullableTime     = "templates/%s/update-nullable-time.txt"
 	TmplCollectionCriteria               = "templates/%s/criteria.txt"
 	TmplCollectionCriteriaString         = "templates/%s/criteria-string.txt"
 	TmplCollectionCriteriaInt            = "templates/%s/criteria-int.txt"
+	TmplCollectionCriteriaBool           = "templates/%s/criteria-bool.txt"
+	TmplCollectionCriteriaTime           = "templates/%s/criteria-time.txt"
 	TmplCollectionCriteriaNullableString = "templates/%s/criteria-nullable-string.txt"
 	TmplCollectionCriteriaNullableInt    = "templates/%s/criteria-nullable-int.txt"
+	TmplCollectionCriteriaNullableBool   = "templates/%s/criteria-nullable-bool.txt"
+	TmplCollectionCriteriaNullableTime   = "templates/%s/criteria-nullable-time.txt"
 	TmplCollectionDelete                 = "templates/%s/delete.txt"
 	TmplCollectionInsert                 = "templates/%s/insert.txt"
 	TmplCollectionSchema                 = "templates/%s/schema.txt"
@@ -72,8 +81,12 @@ func updateTmplList(tmplVersion string) []string {
 	s = append(s, fmt.Sprintf(TmplCollectionUpdate, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionUpdateString, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionUpdateInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionUpdateBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionUpdateTime, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionUpdateNullableString, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionUpdateNullableInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionUpdateNullableBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionUpdateNullableTime, tmplVersion))
 	return s
 }
 
@@ -94,8 +107,12 @@ func criteriaTmplList(tmplVersion string) []string {
 	s = append(s, fmt.Sprintf(TmplCollectionCriteria, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionCriteriaString, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionCriteriaInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionCriteriaBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionCriteriaTime, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionCriteriaNullableString, tmplVersion))
 	s = append(s, fmt.Sprintf(TmplCollectionCriteriaNullableInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionCriteriaNullableBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionCriteriaNullableTime, tmplVersion))
 	return s
 }
 
@@ -135,8 +152,8 @@ func WithFormatCode(b bool) Option {
 type GenerationContext struct {
 	Opts         Options
 	Schema       *schema.Schema
-	Attributes   []Attribute
-	PkAttributes []Attribute
+	Attributes   []attribute.Attribute
+	PkAttributes []attribute.Attribute
 }
 
 func (ctx GenerationContext) GoPackageImports(ambit string) []string {
@@ -170,10 +187,32 @@ func (ctx GenerationContext) GoPackageImports(ambit string) []string {
 	return pkgs
 }
 
+func (ctx GenerationContext) MaxTextType(nullable bool) []int {
+	maxTextTypesMap := make(map[int]struct{})
+
+	for _, a := range ctx.Attributes {
+		if (a.GetDefinition().Typ == "string" && a.GetDefinition().Nullable == false) ||
+			(a.GetDefinition().Typ == "nullable-string" && a.GetDefinition().Nullable == true) {
+			maxTextTypesMap[a.GetDefinition().MaxLength] = struct{}{}
+		}
+	}
+
+	if len(maxTextTypesMap) > 0 {
+		var res []int
+		for i, _ := range maxTextTypesMap {
+			res = append(res, i)
+		}
+
+		return res
+	}
+
+	return nil
+}
+
 type Generator struct {
 	Opts       Options
 	Schema     *schema.Schema
-	Attributes []Attribute
+	Attributes []attribute.Attribute
 }
 
 func NewGenerator(sch *schema.Schema, opts ...Option) (Generator, error) {
@@ -187,7 +226,7 @@ func NewGenerator(sch *schema.Schema, opts ...Option) (Generator, error) {
 	}
 
 	for _, a := range sch.Fields {
-		ga, err := NewAttribute(a)
+		ga, err := attribute.NewAttribute(a)
 		if err != nil {
 			return g, err
 		}
@@ -197,8 +236,8 @@ func NewGenerator(sch *schema.Schema, opts ...Option) (Generator, error) {
 	return g, nil
 }
 
-func (g *Generator) PkAttributes() []Attribute {
-	var pk []Attribute
+func (g *Generator) PkAttributes() []attribute.Attribute {
+	var pk []attribute.Attribute
 	for _, a := range g.Attributes {
 		if a.GetDefinition().IsPKey {
 			pk = append(pk, a)
@@ -331,7 +370,7 @@ func getTemplateUtilityFunctions() template.FuncMap {
 
 			return r
 		},
-		"filterSubTemplateContext": func(attribute Attribute, criteriaObjectName string) map[string]interface{} {
+		"filterSubTemplateContext": func(attribute attribute.Attribute, criteriaObjectName string) map[string]interface{} {
 			return map[string]interface{}{
 				"Attr":              attribute,
 				"CriteriaStructRef": criteriaObjectName,

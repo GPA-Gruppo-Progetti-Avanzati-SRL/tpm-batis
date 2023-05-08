@@ -12,10 +12,11 @@ import (
 type UpdateData struct {
 	flagsDirty         bitset.BitSet
 	rowsAffectedWanted int64
-	Id                 string
-	Lastname           string
+	Lastname           Max20Text
 	Nickname           sql.NullString
 	Age                sql.NullInt32
+	Consensus          sql.NullBool
+	CreationTm         sql.NullTime
 }
 
 func (uda *UpdateData) BuildWithFilter(f sqlmapper.Filter) map[string]interface{} {
@@ -46,7 +47,7 @@ func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
 	}
 }
 
-func UpdateWithLastname(p string) UpdateOp {
+func UpdateWithLastname(p Max20Text) UpdateOp {
 	return func(u *UpdateData) {
 		u.Lastname = p
 		u.flagsDirty.Set(LastnameFieldIndex)
@@ -77,6 +78,28 @@ func UpdateWithAge(p sql.NullInt32) UpdateOp {
 
 func (uda *UpdateData) IsAgeDirty() bool {
 	return uda.flagsDirty.Test(AgeFieldIndex)
+}
+
+func UpdateWithConsensus(p sql.NullBool) UpdateOp {
+	return func(u *UpdateData) {
+		u.Consensus = p
+		u.flagsDirty.Set(ConsensusFieldIndex)
+	}
+}
+
+func (uda *UpdateData) IsConsensusDirty() bool {
+	return uda.flagsDirty.Test(ConsensusFieldIndex)
+}
+
+func UpdateWithCreationTm(p sql.NullTime) UpdateOp {
+	return func(u *UpdateData) {
+		u.CreationTm = p
+		u.flagsDirty.Set(CreationTmFieldIndex)
+	}
+}
+
+func (uda *UpdateData) IsCreationTmDirty() bool {
+	return uda.flagsDirty.Test(CreationTmFieldIndex)
 }
 
 func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {

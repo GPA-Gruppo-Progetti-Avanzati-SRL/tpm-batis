@@ -1,4 +1,5 @@
 package {{ .Schema.PackageName }}_test
+{{ $pkg := .Schema.PackageName }}
 
 import (
 	"{{ .Schema.Properties.Package }}"
@@ -63,7 +64,7 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 	p := {{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}{
 	    /*  complete as needed */
         {{- range $a := .Attributes}}
-           {{ $a.GoAttributeName }}: {{ $a.GoSampleValue }},
+           {{ $a.GoAttributeName }}: {{ $a.GoSampleValue $pkg }},
         {{- end}}
 	}
 
@@ -71,11 +72,10 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 	require.NoError(t, err)
 
 	uopts := []{{ .Schema.PackageName }}.UpdateOp{
-	    {{ $pkg := .Schema.PackageName }}
 	     {{ $pkg }}.UpdateWithRowsAffectedWanted(1),
 	    /*  complete as needed */
 	    {{- range $a := .Attributes}}{{ if $a.GetDefinition.WithUpdate }}
-               {{ $pkg }}.UpdateWith{{ $a.GoAttributeName }}({{ $a.GoSampleValue }}),
+               {{ $pkg }}.UpdateWith{{ $a.GoAttributeName }}({{ $a.GoSampleValue $pkg }}),
         {{- end}}{{- end}}
 	}
 

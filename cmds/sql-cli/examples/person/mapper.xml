@@ -2,18 +2,20 @@
 <sqlmapper namespace="person.Entity" >
 
     <insert id="insert">
-        INSERT INTO person ( id, lastname, nickname, age)
+        INSERT INTO person ( id, lastname, nickname, age, consensus, creation_tm)
         VALUES
         (
          #{.record.Id}
         , #{.record.Lastname}
         , #{.record.Nickname}
         , #{.record.Age}
+        , #{.record.Consensus}
+        , #{.record.CreationTm}
         )
     </insert>
 
     <select id='select'  >
-        select  id , lastname , nickname , age
+        select  id , lastname , nickname , age , consensus , creation_tm
         from person
         <include refid='filter_where_clause' />
 
@@ -89,6 +91,14 @@
                 age = #{.record.Age},
             </if>
             
+            <if test='.record.IsConsensusDirty' >
+                consensus = #{.record.Consensus},
+            </if>
+            
+            <if test='.record.IsCreationTmDirty' >
+                creation_tm = #{.record.CreationTm},
+            </if>
+            
         </set>
         where  id = #{.pk.Id} 
     </update>
@@ -106,6 +116,14 @@
             
             <if test='.record.IsAgeDirty' >
                 age = #{.record.Age},
+            </if>
+            
+            <if test='.record.IsConsensusDirty' >
+                consensus = #{.record.Consensus},
+            </if>
+            
+            <if test='.record.IsCreationTmDirty' >
+                creation_tm = #{.record.CreationTm},
             </if>
             
         </set>

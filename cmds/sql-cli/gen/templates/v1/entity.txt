@@ -26,3 +26,136 @@ type PrimaryKey struct {
 }
 {{ end }}
 
+// isLengthRestrictionValid utility function for Max??Text types
+func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
+	if length > 0 && len(s) != length {
+		return false
+	}
+
+	if minLength > 0 && len(s) < minLength {
+		return false
+	}
+
+	if maxLength > 0 && len(s) > maxLength {
+		return false
+	}
+
+	return true
+}
+
+{{- range $maxLength := .MaxTextType false}}
+/*
+ * Max{{ $maxLength }}Text Type Def
+ */
+
+type Max{{ $maxLength }}Text  string
+
+const (
+	Max{{ $maxLength }}TextZero      = ""
+	Max{{ $maxLength }}TextLength    = 0
+	Max{{ $maxLength }}TextMinLength = 1
+	Max{{ $maxLength }}TextMaxLength = {{ $maxLength }}
+)
+
+// IsValid checks if Max105Text of type String is valid
+func (t Max{{ $maxLength }}Text ) IsValid() bool {
+	return isLengthRestrictionValid(t.ToString(), Max{{ $maxLength }}TextLength, Max{{ $maxLength }}TextMinLength, Max{{ $maxLength }}TextMaxLength)
+}
+
+// ToString method for easy conversion
+func (t Max{{ $maxLength }}Text ) ToString() string {
+	return string(t)
+}
+
+// ToMax{{ $maxLength }}Text  method for easy conversion with application of restrictions
+func ToMax{{ $maxLength }}Text (i interface{}) (Max{{ $maxLength }}Text , error) {
+
+	s := ""
+	switch ti := i.(type) {
+	case fmt.Stringer:
+		s = ti.String()
+	case string:
+		s = ti
+	default:
+		return "", fmt.Errorf("")
+	}
+	if !isLengthRestrictionValid(s, Max{{ $maxLength }}TextLength, Max{{ $maxLength }}TextMinLength, Max{{ $maxLength }}TextMaxLength) {
+		return "", fmt.Errorf("cannot satisfy length restriction for %s of type Max{{ $maxLength }}Text", s)
+	}
+
+	return Max{{ $maxLength }}Text (s), nil
+}
+
+// MustToMax{{ $maxLength }}Text  method for easy conversion with application of restrictions. Panics on error.
+func MustToMax{{ $maxLength }}Text (s interface{}) Max{{ $maxLength }}Text {
+	v, err := ToMax{{ $maxLength }}Text (s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+{{- end}}
+
+{{- range $maxLength := .MaxTextType true}}
+/*
+ * NullableMax{{ $maxLength }}Text Type Def
+ */
+
+type NullableMax{{ $maxLength }}Text sql.NullString
+
+const (
+	NullableMax{{ $maxLength }}TextZero      = ""
+	NullableMax{{ $maxLength }}TextLength    = 0
+	NullableMax{{ $maxLength }}TextMinLength = 0
+	NullableMax{{ $maxLength }}TextMaxLength = {{ $maxLength }}
+)
+
+// IsValid checks if Max105Text of type String is valid
+func (t NullableMax{{ $maxLength }}Text) IsValid() bool {
+	return isLengthRestrictionValid(t.ToString(), NullableMax{{ $maxLength }}TextLength, NullableMax{{ $maxLength }}TextMinLength, NullableMax{{ $maxLength }}TextMaxLength)
+}
+
+// ToString method for easy conversion
+func (t NullableMax{{ $maxLength }}Text) ToString() string {
+	if t.Valid {
+		return t.String
+	}
+	return ""
+}
+
+// ToNullableMax{{ $maxLength }}Text  method for easy conversion with application of restrictions
+func ToNullableMax{{ $maxLength }}Text(i interface{}) (NullableMax{{ $maxLength }}Text, error) {
+
+	s := ""
+	switch ti := i.(type) {
+	case sql.NullString:
+		if ti.Valid {
+			s = ti.String
+		}
+
+	case fmt.Stringer:
+		s = ti.String()
+	case string:
+		s = ti
+	default:
+		return NullableMax{{ $maxLength }}Text(sql.NullString{}), fmt.Errorf("")
+	}
+
+	if !isLengthRestrictionValid(s, NullableMax{{ $maxLength }}TextLength, NullableMax{{ $maxLength }}TextMinLength, NullableMax{{ $maxLength }}TextMaxLength) {
+		return NullableMax{{ $maxLength }}Text(sql.NullString{}), fmt.Errorf("cannot satisfy length restriction for %s of type NullableMax{{ $maxLength }}Text", s)
+	}
+
+	return NullableMax{{ $maxLength }}Text(sqlutil.ToSqlNullString(s)), nil
+}
+
+// MustToNullableMax{{ $maxLength }}Text  method for easy conversion with application of restrictions. Panics on error.
+func MustToNullableMax{{ $maxLength }}Text(s interface{}) NullableMax{{ $maxLength }}Text {
+	v, err := ToNullableMax20Text(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+{{- end }}

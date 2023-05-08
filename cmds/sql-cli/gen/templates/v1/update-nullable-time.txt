@@ -1,0 +1,9 @@
+{{ define "update-nullable-time" }}
+{{ $a := .Attr }}
+func UpdateWith{{ $a.GoAttributeName }}(p {{ $a.GoAttributeType }}) UpdateOp {
+	return func(u *UpdateData) {
+		u.{{ $a.GoAttributeName }} = p
+		u.flagsDirty.Set({{ $a.GoAttributeName }}FieldIndex)
+	}
+}
+{{ end }}

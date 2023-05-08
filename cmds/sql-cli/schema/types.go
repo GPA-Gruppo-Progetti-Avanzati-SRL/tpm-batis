@@ -3,11 +3,14 @@ package schema
 type AttributeType string
 
 const (
-	AttributeTypeString AttributeType = "string"
-	AttributeTypeInt    AttributeType = "int"
-
+	AttributeTypeString         AttributeType = "string"
+	AttributeTypeInt            AttributeType = "int"
+	AttributeTypeBool           AttributeType = "bool"
+	AttributeTypeTime           AttributeType = "time"
 	AttributeTypeNullableString AttributeType = "nullable-string"
 	AttributeTypeNullableInt    AttributeType = "nullable-int"
+	AttributeTypeNullableBool   AttributeType = "nullable-bool"
+	AttributeTypeNullableTime   AttributeType = "nullable-time"
 )
 
 type Field struct {

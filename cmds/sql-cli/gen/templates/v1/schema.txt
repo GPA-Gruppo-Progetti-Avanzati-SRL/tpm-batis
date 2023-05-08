@@ -2,7 +2,7 @@ package {{ .Schema.PackageName }}
 
 var {{ .Schema.Properties.StructName }}TableDDL = `
 CREATE TABLE {{ .Schema.Properties.TableName }} (
-   {{ .Schema.DDL }}
+{{ .Schema.DDL -}}
 );
 `
 var {{ .Schema.Properties.StructName }}TableDropDDL = `DROP TABLE {{ .Schema.Properties.TableName }}`

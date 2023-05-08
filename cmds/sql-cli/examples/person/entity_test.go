@@ -1,6 +1,7 @@
 package person_test
 
 import (
+	"database/sql"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/examples/person"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqllks"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
@@ -62,22 +63,25 @@ func TestEntity(t *testing.T) {
 
 	p := person.Entity{
 		/*  complete as needed */
-		Id:       "user-id",
-		Lastname: "paperino",
-		Nickname: sqlutil.ToSqlNullString("paolino"),
-		Age:      sqlutil.ToSqlNullInt32(61),
+		Id:         person.MustToMax20Text("user-id"),
+		Lastname:   person.MustToMax20Text("paperino"),
+		Nickname:   sql.NullString(person.MustToNullableMax20Text("paolino")),
+		Age:        sqlutil.ToSqlNullInt32(61),
+		Consensus:  sqlutil.ToSqlNullBool(false),
+		CreationTm: sql.NullTime{},
 	}
 
 	_, err = person.Insert(sqlDb, &p)
 	require.NoError(t, err)
 
 	uopts := []person.UpdateOp{
-
 		person.UpdateWithRowsAffectedWanted(1),
 		/*  complete as needed */
-		person.UpdateWithLastname("paperino"),
-		person.UpdateWithNickname(sqlutil.ToSqlNullString("paolino")),
+		person.UpdateWithLastname(person.MustToMax20Text("paperino")),
+		person.UpdateWithNickname(sql.NullString(person.MustToNullableMax20Text("paolino"))),
 		person.UpdateWithAge(sqlutil.ToSqlNullInt32(61)),
+		person.UpdateWithConsensus(sqlutil.ToSqlNullBool(false)),
+		person.UpdateWithCreationTm(sql.NullTime{}),
 	}
 
 	_, err = person.Update(sqlDb, person.NewFilterBuilder().Build(), uopts...)

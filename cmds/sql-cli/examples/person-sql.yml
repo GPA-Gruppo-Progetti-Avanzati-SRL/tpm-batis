@@ -8,7 +8,8 @@ ddl: |
   id varchar(30) primary key,
   lastname  varchar(30) not null,
   nickname  varchar(30),
-  age int
+  age int,
+  consensus bool
 fields:
   - name: id
     db-name: id
@@ -40,4 +41,17 @@ fields:
     nullable: true
     with-criterion: true
     with-update: true
-    sample-value: sqlutil.ToSqlNullInt32(61)
+    sample-value: 61
+  - name: consensus
+    db-name: consensus
+    type: bool
+    nullable: true
+    with-criterion: true
+    with-update: true
+    sample-value: false
+  - name: creationTm
+    db-name: creation_tm
+    type: time
+    nullable: true
+    with-criterion: false
+    with-update: true

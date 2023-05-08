@@ -15,7 +15,9 @@ type UpdateData struct {
        flagsDirty  bitset.BitSet
        rowsAffectedWanted int64
        {{- range $a := .Attributes}}
+       {{- if  $a.GetDefinition.WithUpdate }}
        {{ $a.GoAttributeName }} {{ $a.GoAttributeType }}
+       {{- end}}
        {{- end}}
 }
 
@@ -54,11 +56,23 @@ func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
 {{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "int") }}
 {{ template "update-int" filterSubTemplateContext $a "*" }}
 {{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "bool") }}
+{{ template "update-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "time") }}
+{{ template "update-time" filterSubTemplateContext $a "*" }}
+{{- end -}}
 {{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-string") }}
 {{ template "update-nullable-string" filterSubTemplateContext $a "*" }}
 {{- end -}}
 {{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-int") }}
 {{ template "update-nullable-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-bool") }}
+{{ template "update-nullable-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  and $a.GetDefinition.WithUpdate (eq $a.GetDefinition.Typ "nullable-time") }}
+{{ template "update-nullable-time" filterSubTemplateContext $a "*" }}
 {{- end -}}
 {{- if  $a.GetDefinition.WithUpdate }}
 func (uda *UpdateData) Is{{ $a.GoAttributeName }}Dirty() bool {

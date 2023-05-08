@@ -30,12 +30,12 @@ func (ub *FilterBuilder) Build() sqlmapper.Filter {
 	return ub.fb.Build()
 }
 
-func (ub *FilterBuilder) AndIdEqualTo(aId string) *FilterBuilder {
+func (ub *FilterBuilder) AndIdEqualTo(aId Max20Text) *FilterBuilder {
 	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "id = ", Value: aId})
 	return ub
 }
 
-func (ub *FilterBuilder) AndLastnameEqualTo(aLastname string) *FilterBuilder {
+func (ub *FilterBuilder) AndLastnameEqualTo(aLastname Max20Text) *FilterBuilder {
 	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "lastname = ", Value: aLastname})
 	return ub
 }
@@ -52,5 +52,15 @@ func (ub *FilterBuilder) AndAgeEqualTo(aAge sql.NullInt32) *FilterBuilder {
 
 func (ub *FilterBuilder) AndAgeIsNull() *FilterBuilder {
 	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.NoValue, Condition: "age is null "})
+	return ub
+}
+
+func (ub *FilterBuilder) AndConsensusEqualTo(aConsensus sql.NullBool) *FilterBuilder {
+	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "consensus = ", Value: aConsensus})
+	return ub
+}
+
+func (ub *FilterBuilder) AndConsensusIsNull() *FilterBuilder {
+	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.NoValue, Condition: "consensus is null "})
 	return ub
 }
