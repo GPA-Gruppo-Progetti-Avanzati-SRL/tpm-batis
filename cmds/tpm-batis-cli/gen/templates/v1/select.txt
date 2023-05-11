@@ -7,7 +7,7 @@ import (
   "github.com/rs/zerolog/log"
 )
 
-func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]Entity, error) {
+func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]{{ .Schema.Properties.StructName }}, error) {
 
     const semLogContext = "{{ .Schema.PackageName }}::select"
 

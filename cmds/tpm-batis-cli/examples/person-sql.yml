@@ -3,7 +3,7 @@ properties:
   folder-path: "./person"
   struct-name: Entity
   table-name: "person"
-  package: "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/examples/person"
+  package: "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/examples/person"
 ddl: |
   id varchar(30) primary key,
   lastname  varchar(30) not null,
