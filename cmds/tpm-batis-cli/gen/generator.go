@@ -280,20 +280,26 @@ func (g *Generator) Generate() error {
 		return err
 	}
 
-	if err := g.emit(genCtx, g.Opts.TargetFolder, "update.go", updateTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
-		return err
+	if g.Schema.Properties.DbType == "table" {
+		if err := g.emit(genCtx, g.Opts.TargetFolder, "update.go", updateTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
+			return err
+		}
 	}
 
 	if err := g.emit(genCtx, g.Opts.TargetFolder, "criteria.go", criteriaTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
 		return err
 	}
 
-	if err := g.emit(genCtx, g.Opts.TargetFolder, "delete.go", deleteTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
-		return err
+	if g.Schema.Properties.DbType == "table" {
+		if err := g.emit(genCtx, g.Opts.TargetFolder, "delete.go", deleteTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
+			return err
+		}
 	}
 
-	if err := g.emit(genCtx, g.Opts.TargetFolder, "insert.go", insertTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
-		return err
+	if g.Schema.Properties.DbType == "table" {
+		if err := g.emit(genCtx, g.Opts.TargetFolder, "insert.go", insertTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
+			return err
+		}
 	}
 
 	if err := g.emit(genCtx, g.Opts.TargetFolder, "select.go", selectTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {

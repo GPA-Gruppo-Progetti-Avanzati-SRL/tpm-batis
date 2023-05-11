@@ -1,6 +1,7 @@
 package schema
 
 type AttributeType string
+type DbType string
 
 const (
 	AttributeTypeString         AttributeType = "string"
@@ -11,6 +12,9 @@ const (
 	AttributeTypeNullableInt    AttributeType = "nullable-int"
 	AttributeTypeNullableBool   AttributeType = "nullable-bool"
 	AttributeTypeNullableTime   AttributeType = "nullable-time"
+
+	DbTypeTable DbType = "table"
+	DbTypeView  DbType = "view"
 )
 
 type Field struct {
@@ -28,7 +32,8 @@ type Field struct {
 }
 
 type Properties struct {
-	TableName  string `json:"table-name,omitempty" yaml:"table-name,omitempty"`
+	DbName     string `json:"db-name,omitempty" yaml:"db-name,omitempty"`
+	DbType     DbType `json:"db-type,omitempty" yaml:"db-type,omitempty"`
 	FolderPath string `json:"folder-path,omitempty" yaml:"folder-path,omitempty"`
 	Package    string `json:"package,omitempty" yaml:"package,omitempty"`
 	StructName string `json:"struct-name,omitempty" yaml:"struct-name,omitempty"`

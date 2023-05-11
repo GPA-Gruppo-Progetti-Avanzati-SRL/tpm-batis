@@ -1,8 +1,8 @@
 package {{ .Schema.PackageName }}
 
 var {{ .Schema.Properties.StructName }}TableDDL = `
-CREATE TABLE {{ .Schema.Properties.TableName }} (
+CREATE TABLE {{ .Schema.Properties.DbName }} (
 {{ .Schema.DDL -}}
 );
 `
-var {{ .Schema.Properties.StructName }}TableDropDDL = `DROP TABLE {{ .Schema.Properties.TableName }}`
+var {{ .Schema.Properties.StructName }}TableDropDDL = `DROP TABLE {{ .Schema.Properties.DbName }}`

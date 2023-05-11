@@ -2,7 +2,8 @@ name: person
 properties:
   folder-path: "./person"
   struct-name: Entity
-  table-name: "person"
+  db-name: "person"
+  db-type: "table"
   package: "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/examples/person"
 ddl: |
   id varchar(30) primary key,

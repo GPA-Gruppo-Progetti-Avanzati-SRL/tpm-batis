@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqlmapper namespace="{{ .Schema.PackageName }}.{{ .Schema.Properties.StructName }}" >
 
+{{- if eq .Schema.Properties.DbType "table" }}
     <insert id="insert">
-        INSERT INTO {{ .Schema.Properties.TableName }} ({{- range $i, $a := .Attributes -}}{{ if $i }},{{- end }} {{ $a.DbAttributeName }}{{- end}})
+        INSERT INTO {{ .Schema.Properties.DbName }} ({{- range $i, $a := .Attributes -}}{{ if $i }},{{- end }} {{ $a.DbAttributeName }}{{- end}})
         VALUES
         (
         {{- range $i, $a := .Attributes}}
@@ -10,10 +11,11 @@
         {{- end}}
         )
     </insert>
+{{- end }}
 
     <select id='select'  >
         select  {{- range $i, $a := .Attributes}} {{ if $i }},{{ end }} {{ $a.DbAttributeName }} {{- end}}
-        from {{ .Schema.Properties.TableName }}
+        from {{ .Schema.Properties.DbName }}
         <include refid='filter_where_clause' />
 
         <if test=".filter.OrderBy" >
@@ -24,7 +26,7 @@
 
     <select id='count'  >
         select count(*)
-        from {{ .Schema.Properties.TableName }}
+        from {{ .Schema.Properties.DbName }}
         <include refid='filter_where_clause' />
 
         <if test=".filter.OrderBy" >
@@ -32,18 +34,20 @@
         </if>
     </select>
 
+{{- if eq .Schema.Properties.DbType "table" }}
     <delete id='delete'  >
         delete
-        from {{ .Schema.Properties.TableName }}
+        from {{ .Schema.Properties.DbName }}
         <include refid='filter_where_clause' />
     </delete>
 
     {{ if .Schema.HasPrimaryKey }}
     <update id="deleteByPrimaryKey" >
-        delete from {{ .Schema.Properties.TableName }}
+        delete from {{ .Schema.Properties.DbName }}
         where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
     </update>
     {{- end }}
+{{- end }}
 
     <sql id='filter_where_clause' >
         <where >
@@ -75,7 +79,7 @@
 
     {{ if .Schema.HasPrimaryKey }}
     <update id="updateByPrimaryKey" >
-        update {{ .Schema.Properties.TableName }}
+        update {{ .Schema.Properties.DbName }}
         <set >
             {{- range $a := .Attributes}}{{ if  $a.GetDefinition.WithUpdate }}
             <if test='.record.Is{{ $a.GoAttributeName }}Dirty' >
@@ -88,7 +92,7 @@
     {{- end }}
 
    <update id="update" >
-        update {{ .Schema.Properties.TableName }}
+        update {{ .Schema.Properties.DbName }}
         <set >
             {{- range $a := .Attributes}}{{ if  $a.GetDefinition.WithUpdate }}
             <if test='.record.Is{{ $a.GoAttributeName }}Dirty' >

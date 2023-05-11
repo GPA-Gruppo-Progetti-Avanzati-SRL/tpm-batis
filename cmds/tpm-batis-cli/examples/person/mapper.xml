@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqlmapper namespace="person.Entity" >
-
     <insert id="insert">
         INSERT INTO person ( id, lastname, nickname, age, consensus, creation_tm)
         VALUES
@@ -34,7 +33,6 @@
             order by ${.filter.OrderBy}
         </if>
     </select>
-
     <delete id='delete'  >
         delete
         from person
