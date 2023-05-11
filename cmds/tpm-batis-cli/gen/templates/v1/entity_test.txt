@@ -3,6 +3,9 @@ package {{ .Schema.PackageName }}_test
 
 import (
 	"{{ .Schema.Properties.Package }}"
+{{range $pkg := .GoPackageImports "entity" }}
+   "{{$pkg}}"
+{{- end}}
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqllks"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
 	_ "github.com/lib/pq"

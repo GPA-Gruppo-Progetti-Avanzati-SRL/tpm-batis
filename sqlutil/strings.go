@@ -1,6 +1,9 @@
 package sqlutil
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func ToMaxText(s string, maxLength int) (string, bool) {
 	if maxLength == 0 {
@@ -22,4 +25,17 @@ func ToMaxText(s string, maxLength int) (string, bool) {
 	}
 
 	return s, truncated
+}
+
+func ToSqlString(s string) string {
+	var sb strings.Builder
+	sb.WriteRune('\'')
+	for _, c := range s {
+		sb.WriteRune(c)
+		if c == '\'' {
+			sb.WriteRune(c)
+		}
+	}
+	sb.WriteRune('\'')
+	return sb.String()
 }

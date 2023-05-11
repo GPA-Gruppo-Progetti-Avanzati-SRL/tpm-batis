@@ -1,8 +1,9 @@
 package person_test
 
 import (
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/examples/person"
+
 	"database/sql"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/examples/person"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqllks"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
 	_ "github.com/lib/pq"

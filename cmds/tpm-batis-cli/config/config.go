@@ -101,7 +101,7 @@ func newConfig(_ context.Context, cfgFileName string) (*Config, error) {
 	}
 
 	if len(cfg.flagSet.Args()) != 0 {
-		log.Warn().Interface("flag", cfg.flagSet.Arg(0)).Msg(semLogContext + " invalid command line flag")
+		log.Warn().Interface("flag", cfg.flagSet.Arg(0)).Msg(semLogContext + " non-flag parameter on command line")
 	}
 
 	log.Debug().Str("cfg", fmt.Sprintf("%+v", cfg)).Msg(semLogContext + " command line parsed")
@@ -119,6 +119,7 @@ func newConfig(_ context.Context, cfgFileName string) (*Config, error) {
 	log.Debug().Str("config", fmt.Sprintf("%+v", cfg)).Msg("configuration Loaded")
 
 	if err := cfg.checkValid(); err != nil {
+		cfg.flagSet.Usage()
 		return nil, err
 	}
 

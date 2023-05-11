@@ -4,6 +4,8 @@ import (
 {{range $pkg := .GoPackageImports "entity" }}
    "{{$pkg}}"
 {{- end}}
+   "fmt"
+   "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
 )
 
 const (

@@ -4,8 +4,8 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/gen/attribute"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/sql-cli/schema"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/gen/attribute"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/schema"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/templateutil"
 	"github.com/rs/zerolog/log"
@@ -43,6 +43,7 @@ const (
 	TmplCollectionCriteriaNullableTime   = "templates/%s/criteria-nullable-time.txt"
 	TmplCollectionDelete                 = "templates/%s/delete.txt"
 	TmplCollectionInsert                 = "templates/%s/insert.txt"
+	TmplCollectionSelect                 = "templates/%s/select.txt"
 	TmplCollectionSchema                 = "templates/%s/schema.txt"
 )
 
@@ -93,6 +94,12 @@ func updateTmplList(tmplVersion string) []string {
 func deleteTmplList(tmplVersion string) []string {
 	s := make([]string, 0, 1)
 	s = append(s, fmt.Sprintf(TmplCollectionDelete, tmplVersion))
+	return s
+}
+
+func selectTmplList(tmplVersion string) []string {
+	s := make([]string, 0, 1)
+	s = append(s, fmt.Sprintf(TmplCollectionSelect, tmplVersion))
 	return s
 }
 
@@ -286,6 +293,10 @@ func (g *Generator) Generate() error {
 	}
 
 	if err := g.emit(genCtx, g.Opts.TargetFolder, "insert.go", insertTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
+		return err
+	}
+
+	if err := g.emit(genCtx, g.Opts.TargetFolder, "select.go", selectTmplList(g.Opts.Version), g.Opts.FormatCode); err != nil {
 		return err
 	}
 
