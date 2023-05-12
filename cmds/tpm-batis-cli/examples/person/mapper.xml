@@ -22,6 +22,19 @@
             order by ${.filter.OrderBy}
         </if>
 
+        <if test="gt .filter.Limit 0" >
+            limit ${.filter.Limit}
+        </if>
+
+        <if test="gt .filter.Offset 0" >
+            offset ${.filter.Offset}
+        </if>
+
+    </select>
+    <select id="selectByPrimaryKey" >
+        select  id , lastname , nickname , age , consensus , creation_tm
+        from person
+        where  id = #{.pk.Id} 
     </select>
 
     <select id='count'  >
@@ -72,8 +85,6 @@
             </foreach>
         </where>
     </sql>
-
-    
     <update id="updateByPrimaryKey" >
         update person
         <set >

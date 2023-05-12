@@ -22,7 +22,23 @@
             order by ${.filter.OrderBy}
         </if>
 
+        <if test="gt .filter.Limit 0" >
+            limit ${.filter.Limit}
+        </if>
+
+        <if test="gt .filter.Offset 0" >
+            offset ${.filter.Offset}
+        </if>
+
     </select>
+
+    {{- if .Schema.HasPrimaryKey }}
+    <select id="selectByPrimaryKey" >
+        select  {{- range $i, $a := .Attributes}} {{ if $i }},{{ end }} {{ $a.DbAttributeName }} {{- end}}
+        from {{ .Schema.Properties.DbName }}
+        where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
+    </select>
+    {{- end }}
 
     <select id='count'  >
         select count(*)
@@ -77,7 +93,7 @@
         </where>
     </sql>
 
-    {{ if .Schema.HasPrimaryKey }}
+    {{- if .Schema.HasPrimaryKey }}
     <update id="updateByPrimaryKey" >
         update {{ .Schema.Properties.DbName }}
         <set >

@@ -10,7 +10,8 @@ ddl: |
   lastname  varchar(30) not null,
   nickname  varchar(30),
   age int,
-  consensus bool
+  consensus bool,
+  creation_tm timestamp
 fields:
   - name: id
     db-name: id

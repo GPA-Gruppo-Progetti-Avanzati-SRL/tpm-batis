@@ -2,6 +2,7 @@ package person_test
 
 import (
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/examples/person"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
 
 	"database/sql"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqllks"
@@ -53,15 +54,21 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
+const doDDL = true
+
 func TestEntity(t *testing.T) {
 	lks, err := sqllks.GetLinkedService("default")
 	require.NoError(t, err)
 
 	sqlDb, err := lks.DB()
 	require.NoError(t, err)
-	sqlDb.MustExec(person.EntityTableDDL)
-	defer sqlDb.MustExec(person.EntityTableDropDDL)
 
+	if doDDL {
+		t.Log("ddl execution")
+		sqlDb.MustExec(person.EntityTableDDL)
+		defer sqlDb.MustExec(person.EntityTableDropDDL)
+	}
+	t.Log("insert statement")
 	p := person.Entity{
 		/*  complete as needed */
 		Id:         person.MustToMax20Text("user-id"),
@@ -75,6 +82,7 @@ func TestEntity(t *testing.T) {
 	_, err = person.Insert(sqlDb, &p)
 	require.NoError(t, err)
 
+	t.Log("update statement")
 	uopts := []person.UpdateOp{
 		person.UpdateWithRowsAffectedWanted(1),
 		/*  complete as needed */
@@ -87,4 +95,17 @@ func TestEntity(t *testing.T) {
 
 	_, err = person.Update(sqlDb, person.NewFilterBuilder().Build(), uopts...)
 	require.NoError(t, err)
+
+	t.Log("select statement")
+	f := sqlmapper.NewFilterBuilder().Limit(2).Offset(0)
+	l, err := person.Select(sqlDb, f.Build())
+	require.NoError(t, err)
+	for i, e := range l {
+		t.Logf("row: %d - %v", i, e)
+	}
+	t.Log("select-by-primary-key statement")
+	e, err := person.SelectByPrimaryKey(sqlDb, person.PrimaryKey{Id: person.MustToMax20Text("user-id")})
+	require.NoError(t, err)
+	t.Log(e)
+
 }

@@ -3,6 +3,7 @@ package {{ .Schema.PackageName }}_test
 
 import (
 	"{{ .Schema.Properties.Package }}"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
 {{range $pkg := .GoPackageImports "entity" }}
    "{{$pkg}}"
 {{- end}}
@@ -55,15 +56,23 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
+const doDDL = false
+
 func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 	lks, err := sqllks.GetLinkedService("default")
 	require.NoError(t, err)
 
 	sqlDb, err := lks.DB()
 	require.NoError(t, err)
-	sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDDL)
-	defer sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDropDDL)
 
+	if doDDL {
+	   t.Log("ddl execution")
+	   sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDDL)
+	   defer sqlDb.MustExec({{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}TableDropDDL)
+    }
+
+	{{- if eq .Schema.Properties.DbType "table" }}
+	t.Log("insert statement")
 	p := {{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}{
 	    /*  complete as needed */
         {{- range $a := .Attributes}}
@@ -74,6 +83,7 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 	_, err = {{ .Schema.PackageName }}.Insert(sqlDb, &p)
 	require.NoError(t, err)
 
+	t.Log("update statement")
 	uopts := []{{ .Schema.PackageName }}.UpdateOp{
 	     {{ $pkg }}.UpdateWithRowsAffectedWanted(1),
 	    /*  complete as needed */
@@ -84,4 +94,21 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 
 	_, err = {{ .Schema.PackageName }}.Update(sqlDb, {{ .Schema.PackageName }}.NewFilterBuilder().Build(), uopts...)
 	require.NoError(t, err)
+	{{- end}}
+
+    t.Log("select statement")
+	f := sqlmapper.NewFilterBuilder().Limit(2).Offset(0)
+	l, err := {{ .Schema.PackageName }}.Select(sqlDb, f.Build())
+	require.NoError(t, err)
+	for i, e := range l {
+		t.Logf("row: %d - %v", i, e)
+	}
+
+    {{- if .Schema.HasPrimaryKey }}
+    t.Log("select-by-primary-key statement")
+	e, err := {{ .Schema.PackageName }}.SelectByPrimaryKey(sqlDb, {{ .Schema.PackageName }}.PrimaryKey{ {{- range $a := .PkAttributes}}  {{ $a.GoAttributeName }} : {{ $a.GoSampleValue  $pkg }} {{ end }} })
+ 	require.NoError(t, err)
+ 	t.Log(e)
+	{{- end}}
+
 }

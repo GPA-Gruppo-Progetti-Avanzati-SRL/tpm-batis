@@ -124,6 +124,7 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 	return int(n), nil
 }
 
+{{- if .Schema.HasPrimaryKey }}
 func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, error) {
 
     const semLogContext = "{{ .Schema.PackageName }}::update-by-primary-key"
@@ -166,3 +167,4 @@ func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, erro
 
 	return int(n), nil
 }
+{{- end }}

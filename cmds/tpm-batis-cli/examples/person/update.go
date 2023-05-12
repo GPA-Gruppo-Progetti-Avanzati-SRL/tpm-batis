@@ -143,7 +143,6 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 
 	return int(n), nil
 }
-
 func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, error) {
 
 	const semLogContext = "person::update-by-primary-key"

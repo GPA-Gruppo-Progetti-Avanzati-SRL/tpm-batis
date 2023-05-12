@@ -15,12 +15,14 @@ type FilterBuilder struct {
 	orListOfCriteria []Criteria
 	orderBy          string
 	limit            int
+	offset           int
 }
 
 type Filter struct {
 	OrListOfCriteria []Criteria
 	OrderBy          string
 	Limit            int
+	Offset           int
 }
 
 type Criteria struct {
@@ -34,7 +36,7 @@ type Criterion struct {
 }
 
 func NewFilterBuilder() *FilterBuilder {
-	return &FilterBuilder{}
+	return &FilterBuilder{limit: -1, offset: -1}
 }
 
 func (f *FilterBuilder) OrderBy(orderBy string) *FilterBuilder {
@@ -44,6 +46,11 @@ func (f *FilterBuilder) OrderBy(orderBy string) *FilterBuilder {
 
 func (f *FilterBuilder) Limit(n int) *FilterBuilder {
 	f.limit = n
+	return f
+}
+
+func (f *FilterBuilder) Offset(n int) *FilterBuilder {
+	f.offset = n
 	return f
 }
 
@@ -64,7 +71,7 @@ func (f *FilterBuilder) And(c Criterion) *FilterBuilder {
 
 func (f *FilterBuilder) Build() Filter {
 
-	filter := Filter{OrderBy: f.orderBy, Limit: f.limit}
+	filter := Filter{OrderBy: f.orderBy, Limit: f.limit, Offset: f.offset}
 	for _, criteria := range f.orListOfCriteria {
 		if len(criteria.AndListOfCriterion) > 0 {
 			filter.OrListOfCriteria = append(filter.OrListOfCriteria, criteria)
