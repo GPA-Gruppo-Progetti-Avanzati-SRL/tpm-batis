@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-const doDDL = true
+const doDDL = false
 
 func TestEntity(t *testing.T) {
 	lks, err := sqllks.GetLinkedService("default")

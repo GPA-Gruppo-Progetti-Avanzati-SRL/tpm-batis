@@ -106,7 +106,7 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 
     {{- if .Schema.HasPrimaryKey }}
     t.Log("select-by-primary-key statement")
-	e, err := {{ .Schema.PackageName }}.SelectByPrimaryKey(sqlDb, {{ .Schema.PackageName }}.PrimaryKey{ {{- range $a := .PkAttributes}}  {{ $a.GoAttributeName }} : {{ $a.GoSampleValue  $pkg }} {{ end }} })
+	e, err := {{ .Schema.PackageName }}.SelectByPrimaryKey(sqlDb, {{ .Schema.PackageName }}.PrimaryKey{ {{- range $i, $a := .PkAttributes}} {{ if $i }},{{- end }} {{ $a.GoAttributeName }} : {{ $a.GoSampleValue  $pkg }} {{ end }} })
  	require.NoError(t, err)
  	t.Log(e)
 	{{- end}}
