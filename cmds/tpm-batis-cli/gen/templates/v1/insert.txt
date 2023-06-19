@@ -1,11 +1,13 @@
 package {{ .Schema.PackageName }}
 
 import (
+	"database/sql"
+	"fmt"
   	"github.com/jmoiron/sqlx"
   	"github.com/rs/zerolog/log"
 )
 
-func Insert(tx *sqlx.DB, e *{{ .Schema.Properties.StructName }}) (int, error) {
+func Insert(sqlDbOrTx interface{}, e *{{ .Schema.Properties.StructName }}) (int, error) {
 
 	if e == nil {
 		panic("trying to insert null entity in cpx-package")
@@ -21,7 +23,16 @@ func Insert(tx *sqlx.DB, e *{{ .Schema.Properties.StructName }}) (int, error) {
 		return 0, err
 	}
 
-	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+    var r sql.Result
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("insert accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
 	if err != nil {
 		return 0, err
 	}

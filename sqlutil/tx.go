@@ -25,3 +25,11 @@ func TxClose(tx *sqlx.Tx, err error) error {
 	TxRollback(tx)
 	return err
 }
+
+func OnErrorTxClose(tx *sqlx.Tx, err error) error {
+	if err != nil {
+		TxRollback(tx)
+	}
+
+	return err
+}

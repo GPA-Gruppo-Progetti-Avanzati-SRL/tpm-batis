@@ -4,6 +4,7 @@ import (
 {{range $pkg := .GoPackageImports "update" }}
    "{{$pkg}}"
 {{- end}}
+  "database/sql"
   "fmt"
   "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlmapper"
   "github.com/jmoiron/sqlx"
@@ -82,7 +83,7 @@ func (uda *UpdateData) Is{{ $a.GoAttributeName }}Dirty() bool {
 {{end}}
 
 
-func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
+func Update(sqlDbOrTx interface{}, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 
     const semLogContext = "{{ .Schema.PackageName }}::update"
 	if len(uops) == 0 {
@@ -102,7 +103,16 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 		return 0, err
 	}
 
-	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	var r sql.Result
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("update accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
 	if err != nil {
 		return 0, err
 	}
@@ -125,7 +135,7 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 }
 
 {{- if .Schema.HasPrimaryKey }}
-func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, error) {
+func UpdateByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey, uops ...UpdateOp) (int, error) {
 
     const semLogContext = "{{ .Schema.PackageName }}::update-by-primary-key"
 
@@ -146,7 +156,15 @@ func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, erro
 		return 0, err
 	}
 
-	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+    var r sql.Result
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("update-by-primary-key accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
 	if err != nil {
 		return 0, err
 	}

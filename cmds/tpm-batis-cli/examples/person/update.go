@@ -102,7 +102,7 @@ func (uda *UpdateData) IsCreationTmDirty() bool {
 	return uda.flagsDirty.Test(CreationTmFieldIndex)
 }
 
-func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
+func Update(sqlDbOrTx interface{}, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 
 	const semLogContext = "person::update"
 	if len(uops) == 0 {
@@ -122,7 +122,16 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 		return 0, err
 	}
 
-	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	var r sql.Result
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("update accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
 	if err != nil {
 		return 0, err
 	}
@@ -143,7 +152,7 @@ func Update(tx *sqlx.DB, f sqlmapper.Filter, uops ...UpdateOp) (int, error) {
 
 	return int(n), nil
 }
-func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, error) {
+func UpdateByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey, uops ...UpdateOp) (int, error) {
 
 	const semLogContext = "person::update-by-primary-key"
 
@@ -164,7 +173,15 @@ func UpdateByPrimaryKey(tx *sqlx.DB, pk PrimaryKey, uops ...UpdateOp) (int, erro
 		return 0, err
 	}
 
-	r, err := tx.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	var r sql.Result
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		r, err = db.Exec(sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("update-by-primary-key accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
 	if err != nil {
 		return 0, err
 	}

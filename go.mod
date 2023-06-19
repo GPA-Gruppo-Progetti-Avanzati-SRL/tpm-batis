@@ -8,6 +8,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.2.0
 	github.com/rs/zerolog v1.29.0
+	github.com/sourcegraph/go-diff-patch v0.0.0-20220818153721-50706a0e22c3
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )

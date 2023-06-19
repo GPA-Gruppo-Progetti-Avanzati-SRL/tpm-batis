@@ -9,6 +9,9 @@ import (
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/templateutil"
 	"github.com/rs/zerolog/log"
+	godiffpatch "github.com/sourcegraph/go-diff-patch"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -196,24 +199,31 @@ func (ctx GenerationContext) GoPackageImports(ambit string) []string {
 
 func (ctx GenerationContext) MaxTextType(nullable bool) []int {
 	maxTextTypesMap := make(map[int]struct{})
+	var res []int
 
 	for _, a := range ctx.Attributes {
 		if (a.GetDefinition().Typ == "string" && a.GetDefinition().Nullable == false) ||
 			(a.GetDefinition().Typ == "nullable-string" && a.GetDefinition().Nullable == true) {
-			maxTextTypesMap[a.GetDefinition().MaxLength] = struct{}{}
+
+			if _, ok := maxTextTypesMap[a.GetDefinition().MaxLength]; !ok {
+				res = append(res, a.GetDefinition().MaxLength)
+				maxTextTypesMap[a.GetDefinition().MaxLength] = struct{}{}
+			}
 		}
 	}
 
-	if len(maxTextTypesMap) > 0 {
-		var res []int
-		for i, _ := range maxTextTypesMap {
-			res = append(res, i)
+	/*
+		if len(maxTextTypesMap) > 0 {
+			var res []int
+			for i, _ := range maxTextTypesMap {
+				res = append(res, i)
+			}
+
+			return res
 		}
+	*/
 
-		return res
-	}
-
-	return nil
+	return res
 }
 
 type Generator struct {
@@ -363,14 +373,44 @@ func parseTemplateWithFuncMapsProcessWrite2File(templates []templateutil.Info, f
 	if pkgTemplate, err := templateutil.Parse(templates, fMaps); err != nil {
 		return err
 	} else {
+		currentContent, ok, err := readCurrentFileContent(outputFile)
+		if err != nil {
+			return err
+		}
+
 		if err := templateutil.ProcessWrite2File(pkgTemplate, templateData, outputFile, formatSource); err != nil {
 			return err
+		}
+
+		newContent, _, err := readCurrentFileContent(outputFile)
+		if err != nil {
+			return err
+		}
+
+		if ok {
+			patch := godiffpatch.GeneratePatch(outputFile, string(currentContent), string(newContent))
+			if len(patch) > 0 {
+				patchFile := filepath.Join(filepath.Dir(outputFile), filepath.Base(outputFile)+".patch")
+				_ = os.WriteFile(patchFile, []byte(patch), fs.ModePerm)
+			}
 		}
 	}
 
 	return nil
 }
 
+func readCurrentFileContent(fn string) ([]byte, bool, error) {
+	if util.FileExists(fn) {
+		b, err := os.ReadFile(fn)
+		if err != nil {
+			return nil, true, err
+		}
+
+		return b, true, nil
+	}
+
+	return nil, false, nil
+}
 func getTemplateUtilityFunctions() template.FuncMap {
 
 	fMap := template.FuncMap{

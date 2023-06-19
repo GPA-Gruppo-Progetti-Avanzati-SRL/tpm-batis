@@ -1,3 +1,3 @@
 #!/bin/sh
 #
-go run  ../main.go  -collection-def-file person-sql.yml
+go run  ../main.go -format-code -collection-def-file person-sql.yml
