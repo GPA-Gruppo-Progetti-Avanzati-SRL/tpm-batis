@@ -30,12 +30,12 @@ func (ub *FilterBuilder) Build() sqlmapper.Filter {
 	return ub.fb.Build()
 }
 
-func (ub *FilterBuilder) AndIdEqualTo(aId Max20Text) *FilterBuilder {
+func (ub *FilterBuilder) AndIdEqualTo(aId string) *FilterBuilder {
 	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "id = ", Value: aId})
 	return ub
 }
 
-func (ub *FilterBuilder) AndLastnameEqualTo(aLastname Max20Text) *FilterBuilder {
+func (ub *FilterBuilder) AndLastnameEqualTo(aLastname string) *FilterBuilder {
 	ub.fb.And(sqlmapper.Criterion{Type: sqlmapper.SingleValue, Condition: "lastname = ", Value: aLastname})
 	return ub
 }

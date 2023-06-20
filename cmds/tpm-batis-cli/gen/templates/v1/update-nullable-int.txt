@@ -1,9 +1,15 @@
 {{ define "update-nullable-int" }}
 {{ $a := .Attr }}
 func UpdateWith{{ $a.GoAttributeName }}(p {{ $a.GoAttributeType }}) UpdateOp {
-	return func(u *UpdateData) {
-		u.{{ $a.GoAttributeName }} = p
+	return func(u *UpdateData) error {
+	    var ni {{ $a.GoAttributeType }}
+        var err error
+		if ni, err = Validate{{ $a.GoAttributeName }}(p); err != nil {
+    	    return err
+    	}
+		u.{{ $a.GoAttributeName }} = ni
 		u.flagsDirty.Set({{ $a.GoAttributeName }}FieldIndex)
+		return nil
 	}
 }
 {{ end }}

@@ -12,7 +12,7 @@ import (
 type UpdateData struct {
 	flagsDirty         bitset.BitSet
 	rowsAffectedWanted int64
-	Lastname           Max20Text
+	Lastname           string
 	Nickname           sql.NullString
 	Age                sql.NullInt32
 	Consensus          sql.NullBool
@@ -39,18 +39,23 @@ func (uda *UpdateData) BuildWithPrimaryKey(pk PrimaryKey) map[string]interface{}
 	return mapp
 }
 
-type UpdateOp func(u *UpdateData)
+type UpdateOp func(u *UpdateData) error
 
 func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
 		u.rowsAffectedWanted = p
+		return nil
 	}
 }
 
-func UpdateWithLastname(p Max20Text) UpdateOp {
-	return func(u *UpdateData) {
+func UpdateWithLastname(p string) UpdateOp {
+	return func(u *UpdateData) error {
+		if _, err := ValidateLastname(p); err != nil {
+			return err
+		}
 		u.Lastname = p
 		u.flagsDirty.Set(LastnameFieldIndex)
+		return nil
 	}
 }
 
@@ -59,9 +64,13 @@ func (uda *UpdateData) IsLastnameDirty() bool {
 }
 
 func UpdateWithNickname(p sql.NullString) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
+		if _, err := ValidateNickname(p); err != nil {
+			return err
+		}
 		u.Nickname = p
 		u.flagsDirty.Set(NicknameFieldIndex)
+		return nil
 	}
 }
 
@@ -70,9 +79,13 @@ func (uda *UpdateData) IsNicknameDirty() bool {
 }
 
 func UpdateWithAge(p sql.NullInt32) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
+		if _, err := ValidateAge(p); err != nil {
+			return err
+		}
 		u.Age = p
 		u.flagsDirty.Set(AgeFieldIndex)
+		return nil
 	}
 }
 
@@ -81,9 +94,13 @@ func (uda *UpdateData) IsAgeDirty() bool {
 }
 
 func UpdateWithConsensus(p sql.NullBool) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
+		if _, err := ValidateConsensus(p); err != nil {
+			return err
+		}
 		u.Consensus = p
 		u.flagsDirty.Set(ConsensusFieldIndex)
+		return nil
 	}
 }
 
@@ -92,9 +109,13 @@ func (uda *UpdateData) IsConsensusDirty() bool {
 }
 
 func UpdateWithCreationTm(p sql.NullTime) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
+		if _, err := ValidateCreationTm(p); err != nil {
+			return err
+		}
 		u.CreationTm = p
 		u.flagsDirty.Set(CreationTmFieldIndex)
+		return nil
 	}
 }
 
@@ -113,7 +134,11 @@ func Update(sqlDbOrTx interface{}, f sqlmapper.Filter, uops ...UpdateOp) (int, e
 
 	ud := UpdateData{rowsAffectedWanted: -1}
 	for _, o := range uops {
-		o(&ud)
+		err = o(&ud)
+		if err != nil {
+			log.Error().Err(err).Msg(semLogContext)
+			return 0, err
+		}
 	}
 
 	mapp := ud.BuildWithFilter(f)
@@ -164,7 +189,11 @@ func UpdateByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey, uops ...UpdateOp) 
 
 	ud := UpdateData{rowsAffectedWanted: -1}
 	for _, o := range uops {
-		o(&ud)
+		err = o(&ud)
+		if err != nil {
+			log.Error().Err(err).Msg(semLogContext)
+			return 0, err
+		}
 	}
 
 	mapp := ud.BuildWithPrimaryKey(pk)

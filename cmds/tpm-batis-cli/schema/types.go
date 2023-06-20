@@ -18,17 +18,18 @@ const (
 )
 
 type Field struct {
-	Name          string        `json:"name,omitempty" yaml:"name,omitempty"`
-	DbName        string        `json:"db-name,omitempty" yaml:"db-name,omitempty"`
-	Typ           AttributeType `json:"type,omitempty" yaml:"type,omitempty"`
-	Tags          []string      `json:"tags,omitempty" yaml:"tags,omitempty"`
-	IsPKey        bool          `json:"primary-key,omitempty" yaml:"primary-key,omitempty"`
-	WithCriterion bool          `json:"with-criterion,omitempty" yaml:"with-criterion,omitempty"`
-	WithUpdate    bool          `json:"with-update,omitempty" yaml:"with-update,omitempty"`
-	Nullable      bool          `json:"nullable,omitempty" yaml:"nullable,omitempty"`
-	MaxLength     int           `json:"max-length,omitempty" yaml:"max-length,omitempty"`
-	Options       string        `json:"options,omitempty" yaml:"options,omitempty"`
-	SampleValue   string        `json:"sample-value,omitempty" yaml:"sample-value,omitempty"`
+	Name                string        `json:"name,omitempty" yaml:"name,omitempty"`
+	DbName              string        `json:"db-name,omitempty" yaml:"db-name,omitempty"`
+	Typ                 AttributeType `json:"type,omitempty" yaml:"type,omitempty"`
+	Tags                []string      `json:"tags,omitempty" yaml:"tags,omitempty"`
+	IsPKey              bool          `json:"primary-key,omitempty" yaml:"primary-key,omitempty"`
+	WithCriterion       bool          `json:"with-criterion,omitempty" yaml:"with-criterion,omitempty"`
+	WithUpdate          bool          `json:"with-update,omitempty" yaml:"with-update,omitempty"`
+	Nullable            bool          `json:"nullable,omitempty" yaml:"nullable,omitempty"`
+	MaxLength           int           `json:"max-length,omitempty" yaml:"max-length,omitempty"`
+	TruncateToMaxLength bool          `json:"trunc-2-max-length,omitempty" yaml:"trunc-2-max-length,omitempty"`
+	Options             string        `json:"options,omitempty" yaml:"options,omitempty"`
+	SampleValue         string        `json:"sample-value,omitempty" yaml:"sample-value,omitempty"`
 }
 
 type Properties struct {

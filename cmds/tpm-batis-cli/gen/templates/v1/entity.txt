@@ -6,6 +6,7 @@ import (
 {{- end}}
    "fmt"
    "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
+   "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 )
 
 const (
@@ -45,11 +46,40 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 	return true
 }
 
+// constraints validation convenience functions.
+{{ range $a := .Attributes}}
+{{- if  eq $a.GetDefinition.Typ "string" }}
+{{ template "validate-string" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "int" }}
+{{ template "validate-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "bool" }}
+{{ template "validate-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "time" }}
+{{ template "validate-time" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "nullable-string" }}
+{{ template "validate-nullable-string" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "nullable-int" }}
+{{ template "validate-nullable-int" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "nullable-bool" }}
+{{ template "validate-nullable-bool" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{- if  eq $a.GetDefinition.Typ "nullable-time" }}
+{{ template "validate-nullable-time" filterSubTemplateContext $a "*" }}
+{{- end -}}
+{{ end}}
+
 {{- range $maxLength := .MaxTextType false}}
 /*
  * Max{{ $maxLength }}Text Type Def
  */
 
+/*
 type Max{{ $maxLength }}Text  string
 
 const (
@@ -98,12 +128,13 @@ func MustToMax{{ $maxLength }}Text (s interface{}) Max{{ $maxLength }}Text {
 	return v
 }
 {{- end}}
-
+*/
 {{- range $maxLength := .MaxTextType true}}
 /*
  * NullableMax{{ $maxLength }}Text Type Def
  */
 
+/*
 type NullableMax{{ $maxLength }}Text sql.NullString
 
 const (
@@ -161,3 +192,4 @@ func MustToNullableMax{{ $maxLength }}Text(s interface{}) NullableMax{{ $maxLeng
 	return v
 }
 {{- end }}
+*/

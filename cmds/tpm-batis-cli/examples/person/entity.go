@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/sqlutil"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
 )
 
 const (
@@ -16,8 +17,8 @@ const (
 )
 
 type Entity struct {
-	Id         Max20Text      `db:"id"`
-	Lastname   Max20Text      `db:"lastname"`
+	Id         string         `db:"id"`
+	Lastname   string         `db:"lastname"`
 	Nickname   sql.NullString `db:"nickname"`
 	Age        sql.NullInt32  `db:"age"`
 	Consensus  sql.NullBool   `db:"consensus"`
@@ -25,7 +26,7 @@ type Entity struct {
 }
 
 type PrimaryKey struct {
-	Id Max20Text `db:"id"`
+	Id string `db:"id"`
 }
 
 // isLengthRestrictionValid utility function for Max??Text types
@@ -45,11 +46,143 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 	return true
 }
 
+// constraints validation convenience functions.
+
+func ValidateId(id interface{}) (string, error) {
+	s := ""
+	switch ti := id.(type) {
+	case fmt.Stringer:
+		s = ti.String()
+	case string:
+		s = ti
+	default:
+		return "", fmt.Errorf("interface type %T cannot be interpretated as string", id)
+	}
+
+	if !isLengthRestrictionValid(s, 0, 0, 20) {
+		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", s, 20)
+	}
+
+	return s, nil
+}
+
+func MustValidateId(id interface{}) string {
+	var p string
+	var err error
+	if p, err = ValidateId(id); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", id, 20))
+	}
+	return p
+}
+
+func ValidateLastname(lastname interface{}) (string, error) {
+	s := ""
+	switch ti := lastname.(type) {
+	case fmt.Stringer:
+		s = ti.String()
+	case string:
+		s = ti
+	default:
+		return "", fmt.Errorf("interface type %T cannot be interpretated as string", lastname)
+	}
+
+	if !isLengthRestrictionValid(s, 0, 0, 20) {
+		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", s, 20)
+	}
+
+	return s, nil
+}
+
+func MustValidateLastname(lastname interface{}) string {
+	var p string
+	var err error
+	if p, err = ValidateLastname(lastname); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", lastname, 20))
+	}
+	return p
+}
+
+func ValidateNickname(nickname interface{}) (sql.NullString, error) {
+	s := ""
+	switch ti := nickname.(type) {
+	case sql.NullString:
+		if ti.Valid {
+			s = ti.String
+		}
+	case fmt.Stringer:
+		s = ti.String()
+	case string:
+		s = ti
+	default:
+		return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpretated as string", nickname)
+	}
+
+	s, _ = util.ToMaxLength(s, 20)
+
+	if !isLengthRestrictionValid(s, 0, 0, 20) {
+		return sql.NullString{}, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", s, 20)
+	}
+
+	return sqlutil.ToSqlNullString(s), nil
+}
+
+func MustValidateNickname(nickname interface{}) sql.NullString {
+	var p sql.NullString
+	var err error
+	if p, err = ValidateNickname(nickname); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", nickname, 20))
+	}
+	return p
+}
+
+func ValidateAge(age sql.NullInt32) (sql.NullInt32, error) {
+	// no constraints for nullable-int
+	return age, nil
+}
+
+func MustValidateAge(age sql.NullInt32) sql.NullInt32 {
+	var p sql.NullInt32
+	var err error
+	if p, err = ValidateAge(age); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Age", age, 0))
+	}
+	return p
+}
+
+func ValidateConsensus(consensus sql.NullBool) (sql.NullBool, error) {
+	// no constraints for nullable-bool
+	return consensus, nil
+}
+
+func MustValidateConsensus(consensus sql.NullBool) sql.NullBool {
+	var p sql.NullBool
+	var err error
+	if p, err = ValidateConsensus(consensus); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Consensus", consensus, 0))
+	}
+	return p
+}
+
+func ValidateCreationTm(creationTm sql.NullTime) (sql.NullTime, error) {
+	// no constraints for nullable-time
+	return creationTm, nil
+}
+
+func MustValidateCreationTm(creationTm sql.NullTime) sql.NullTime {
+	var p sql.NullTime
+	var err error
+	if p, err = ValidateCreationTm(creationTm); err != nil {
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "CreationTm", creationTm, 0))
+	}
+	return p
+}
+
 /*
  * Max20Text Type Def
  */
 
-type Max20Text string
+/*
+type Max20Text  string
 
 const (
 	Max20TextZero      = ""
@@ -59,17 +192,17 @@ const (
 )
 
 // IsValid checks if Max105Text of type String is valid
-func (t Max20Text) IsValid() bool {
+func (t Max20Text ) IsValid() bool {
 	return isLengthRestrictionValid(t.ToString(), Max20TextLength, Max20TextMinLength, Max20TextMaxLength)
 }
 
 // ToString method for easy conversion
-func (t Max20Text) ToString() string {
+func (t Max20Text ) ToString() string {
 	return string(t)
 }
 
 // ToMax20Text  method for easy conversion with application of restrictions
-func ToMax20Text(i interface{}) (Max20Text, error) {
+func ToMax20Text (i interface{}) (Max20Text , error) {
 
 	s := ""
 	switch ti := i.(type) {
@@ -84,23 +217,24 @@ func ToMax20Text(i interface{}) (Max20Text, error) {
 		return "", fmt.Errorf("cannot satisfy length restriction for %s of type Max20Text", s)
 	}
 
-	return Max20Text(s), nil
+	return Max20Text (s), nil
 }
 
 // MustToMax20Text  method for easy conversion with application of restrictions. Panics on error.
-func MustToMax20Text(s interface{}) Max20Text {
-	v, err := ToMax20Text(s)
+func MustToMax20Text (s interface{}) Max20Text {
+	v, err := ToMax20Text (s)
 	if err != nil {
 		panic(err)
 	}
 
 	return v
 }
-
+*/
 /*
  * NullableMax20Text Type Def
  */
 
+/*
 type NullableMax20Text sql.NullString
 
 const (
@@ -157,3 +291,4 @@ func MustToNullableMax20Text(s interface{}) NullableMax20Text {
 
 	return v
 }
+*/

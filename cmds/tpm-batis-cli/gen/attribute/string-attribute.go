@@ -15,9 +15,9 @@ func (a StringAttribute) GoPackageImports() []string {
 
 func (a StringAttribute) GoSampleValue(pkg string) string {
 	if a.GetDefinition().SampleValue != "" {
-		return fmt.Sprintf("%s.MustToMax%dText(\"%s\")", pkg, a.GetDefinition().MaxLength, a.GetDefinition().SampleValue)
+		return fmt.Sprintf("%s.MustValidate%s(\"%s\")", pkg, a.GoAttributeName(), a.GetDefinition().SampleValue)
 	}
-	return fmt.Sprintf("%s.MustToMax%dText(\"%s\")", pkg, a.GetDefinition().MaxLength, "hello")
+	return fmt.Sprintf("%s.MustValidate%s(\"%s\")", pkg, a.GoAttributeName(), "hello")
 }
 
 // NullStringAttribute implementation of
@@ -31,7 +31,7 @@ func (a NullStringAttribute) GoPackageImports() []string {
 
 func (a NullStringAttribute) GoSampleValue(pkg string) string {
 	if a.GetDefinition().SampleValue != "" {
-		return fmt.Sprintf("sql.NullString(%s.MustToNullableMax%dText(\"%s\"))", pkg, a.GetDefinition().MaxLength, a.GetDefinition().SampleValue)
+		return fmt.Sprintf("%s.MustValidate%s(\"%s\")", pkg, a.GoAttributeName(), a.GetDefinition().SampleValue)
 	}
 	return "sql.NullString{}"
 }

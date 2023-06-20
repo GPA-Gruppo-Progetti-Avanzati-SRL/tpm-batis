@@ -42,11 +42,12 @@ func (uda *UpdateData) BuildWithPrimaryKey(pk PrimaryKey) map[string]interface{}
 	return mapp
 }
 
-type UpdateOp func(u *UpdateData)
+type UpdateOp func(u *UpdateData) error
 
 func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
-	return func(u *UpdateData) {
+	return func(u *UpdateData) error {
 		u.rowsAffectedWanted = p
+		return nil
 	}
 }
 
@@ -94,7 +95,11 @@ func Update(sqlDbOrTx interface{}, f sqlmapper.Filter, uops ...UpdateOp) (int, e
 
 	ud := UpdateData{rowsAffectedWanted:-1}
 	for _, o := range uops {
-		o(&ud)
+		err = o(&ud)
+		if err != nil {
+            log.Error().Err(err).Msg(semLogContext)
+            return 0, err
+		}
 	}
 
 	mapp := ud.BuildWithFilter(f)
@@ -147,7 +152,11 @@ func UpdateByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey, uops ...UpdateOp) 
 
 	ud := UpdateData{rowsAffectedWanted:-1}
 	for _, o := range uops {
-		o(&ud)
+		err = o(&ud)
+		if err != nil {
+            log.Error().Err(err).Msg(semLogContext)
+            return 0, err
+		}
 	}
 
 	mapp := ud.BuildWithPrimaryKey(pk)

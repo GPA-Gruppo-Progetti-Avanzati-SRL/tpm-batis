@@ -1,0 +1,17 @@
+{{ define "validate-time" }}
+{{ $a := .Attr }}
+func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} {{ $a.GoAttributeType }}) ({{ $a.GoAttributeType }}, error) {
+// no constraints for {{$a.GetDefinition.Typ}}
+return {{ $a.GoAttributeName4Param }}, nil
+}
+
+func MustValidate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} {{ $a.GoAttributeType }}) {{ $a.GoAttributeType }} {
+    var p {{ $a.GoAttributeType }}
+    var err error
+    if p, err = Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }}); err != nil {
+        panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", {{ $a.GoAttributeName4Param }}, {{ $a.AttrDefinition.MaxLength}}))
+    }
+    return p
+}
+
+{{ end }}

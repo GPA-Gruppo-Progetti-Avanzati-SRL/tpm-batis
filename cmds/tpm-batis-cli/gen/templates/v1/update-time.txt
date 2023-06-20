@@ -2,8 +2,14 @@
 {{ $a := .Attr }}
 func UpdateWith{{ $a.GoAttributeName }}(p {{ $a.GoAttributeType }}) UpdateOp {
 	return func(u *UpdateData) {
-		u.{{ $a.GoAttributeName }} = p
+	    var t {{ $a.GoAttributeType }}
+        var err error
+		if t, err = Validate{{ $a.GoAttributeName }}(p); err != nil {
+    	    return err
+    	}
+		u.{{ $a.GoAttributeName }} = t
 		u.flagsDirty.Set({{ $a.GoAttributeName }}FieldIndex)
+		return nil
 	}
 }
 {{ end }}

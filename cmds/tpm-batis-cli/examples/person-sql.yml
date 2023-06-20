@@ -33,6 +33,7 @@ fields:
     db-name: nickname
     type: string
     nullable: true
+    trunc-2-max-length: true
     max-length: 20
     with-criterion: true
     with-update: true

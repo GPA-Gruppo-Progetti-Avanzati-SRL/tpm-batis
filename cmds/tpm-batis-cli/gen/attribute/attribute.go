@@ -15,7 +15,7 @@ type Attribute interface {
 	GoAttributeType() string
 	GoPackageImports() []string
 	GoSampleValue(pkg string) string
-
+	GoAttributeName4Param() string
 	/*
 		GetName(qualified bool, prefixed bool) string
 		GetGoPackageImports() []string
@@ -41,13 +41,17 @@ func (a AttributeImpl) GoAttributeName() string {
 	return util.Capitalize(a.AttrDefinition.Name)
 }
 
+func (a AttributeImpl) GoAttributeName4Param() string {
+	return a.AttrDefinition.Name
+}
+
 func (a AttributeImpl) GoAttributeType() string {
 
 	const semLogContext = "attribute::type"
 	var s string
 	switch a.AttrDefinition.Typ {
 	case schema.AttributeTypeString:
-		s = fmt.Sprintf("Max%dText", a.GetDefinition().MaxLength)
+		s = "string" // fmt.Sprintf("Max%dText", a.GetDefinition().MaxLength)
 	case schema.AttributeTypeInt:
 		s = "int32"
 	case schema.AttributeTypeBool:

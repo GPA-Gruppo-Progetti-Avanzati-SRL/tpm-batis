@@ -58,6 +58,7 @@ func TestMain(m *testing.M) {
 
 const doDDL = false
 
+// This is a simple test skeleton that has to be adjusted to do real useful work. please complete with desired values. */
 func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 	lks, err := sqllks.GetLinkedService("default")
 	require.NoError(t, err)
@@ -73,6 +74,9 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
 
 	{{- if eq .Schema.Properties.DbType "table" }}
 	t.Log("insert statement")
+
+	tx := sqlDb.MustBegin()
+
 	p := {{ .Schema.PackageName }}.{{.Schema.Properties.StructName}}{
 	    /*  complete as needed */
         {{- range $a := .Attributes}}
@@ -80,8 +84,8 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
         {{- end}}
 	}
 
-	_, err = {{ .Schema.PackageName }}.Insert(sqlDb, &p)
-	require.NoError(t, err)
+	_, err = {{ .Schema.PackageName }}.Insert(tx, &p)
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 
 	t.Log("update statement")
 	uopts := []{{ .Schema.PackageName }}.UpdateOp{
@@ -92,23 +96,31 @@ func Test{{.Schema.Properties.StructName}}(t *testing.T) {
         {{- end}}{{- end}}
 	}
 
-	_, err = {{ .Schema.PackageName }}.Update(sqlDb, {{ .Schema.PackageName }}.NewFilterBuilder().Build(), uopts...)
-	require.NoError(t, err)
+	_, err = {{ .Schema.PackageName }}.Update(tx, {{ .Schema.PackageName }}.NewFilterBuilder().Build(), uopts...)
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 	{{- end}}
 
     t.Log("select statement")
 	f := sqlmapper.NewFilterBuilder().Limit(2).Offset(0)
-	l, err := {{ .Schema.PackageName }}.Select(sqlDb, f.Build())
-	require.NoError(t, err)
+	l, err := {{ .Schema.PackageName }}.Select(tx, f.Build())
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 	for i, e := range l {
 		t.Logf("row: %d - %v", i, e)
 	}
 
     {{- if .Schema.HasPrimaryKey }}
     t.Log("select-by-primary-key statement")
-	e, err := {{ .Schema.PackageName }}.SelectByPrimaryKey(sqlDb, {{ .Schema.PackageName }}.PrimaryKey{ {{- range $i, $a := .PkAttributes}} {{ if $i }},{{- end }} {{ $a.GoAttributeName }} : {{ $a.GoSampleValue  $pkg }} {{ end }} })
- 	require.NoError(t, err)
+	e, err := {{ .Schema.PackageName }}.SelectByPrimaryKey(tx, {{ .Schema.PackageName }}.PrimaryKey{ {{- range $i, $a := .PkAttributes}} {{ if $i }},{{- end }} {{ $a.GoAttributeName }} : {{ $a.GoSampleValue  $pkg }} {{ end }} })
+ 	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
  	t.Log(e)
 	{{- end}}
 
+	fdel := {{ $pkg }}.NewFilterBuilder()
+	// customize with the proper filters ...
+	// fdel.Or().And...
+	_, err = {{ $pkg }}.Delete(tx, fdel.Build())
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
+
+    err = sqlutil.TxClose(tx, nil)
+    require.NoError(t, err)
 }

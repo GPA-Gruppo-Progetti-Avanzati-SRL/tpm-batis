@@ -1,0 +1,34 @@
+{{ define "validate-string" }}
+{{ $a := .Attr }}
+func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}) ({{ $a.GoAttributeType }}, error) {
+    s := ""
+    switch ti := {{ $a.GoAttributeName4Param }}.(type) {
+    case fmt.Stringer:
+    	s = ti.String()
+    case string:
+    	s = ti
+    default:
+    	return "", fmt.Errorf("interface type %T cannot be interpretated as string", {{ $a.GoAttributeName4Param }})
+    }
+
+{{ if  $a.GetDefinition.TruncateToMaxLength }}
+        s, _ = util.ToMaxLength(s, {{ $a.AttrDefinition.MaxLength}})
+{{- end }}
+
+    if !isLengthRestrictionValid(s, 0, 0, {{ $a.AttrDefinition.MaxLength}}) {
+        return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", s, {{ $a.AttrDefinition.MaxLength}})
+    }
+
+    return s, nil
+}
+
+func MustValidate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}) {{ $a.GoAttributeType }} {
+    var p {{ $a.GoAttributeType }}
+    var err error
+    if p, err = Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }}); err != nil {
+        panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", {{ $a.GoAttributeName4Param }}, {{ $a.AttrDefinition.MaxLength}}))
+    }
+    return p
+}
+
+{{ end }}

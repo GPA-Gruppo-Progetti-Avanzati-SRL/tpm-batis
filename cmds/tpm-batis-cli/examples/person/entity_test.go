@@ -56,6 +56,7 @@ func TestMain(m *testing.M) {
 
 const doDDL = false
 
+// This is a simple test skeleton that has to be adjusted to do real useful work. please complete with desired values. */
 func TestEntity(t *testing.T) {
 	lks, err := sqllks.GetLinkedService("default")
 	require.NoError(t, err)
@@ -69,43 +70,54 @@ func TestEntity(t *testing.T) {
 		defer sqlDb.MustExec(person.EntityTableDropDDL)
 	}
 	t.Log("insert statement")
+
+	tx := sqlDb.MustBegin()
+
 	p := person.Entity{
 		/*  complete as needed */
-		Id:         person.MustToMax20Text("user-id"),
-		Lastname:   person.MustToMax20Text("paperino"),
-		Nickname:   sql.NullString(person.MustToNullableMax20Text("paolino")),
+		Id:         person.MustValidateId("user-id"),
+		Lastname:   person.MustValidateLastname("paperino"),
+		Nickname:   person.MustValidateNickname("paolino"),
 		Age:        sqlutil.ToSqlNullInt32(61),
 		Consensus:  sqlutil.ToSqlNullBool(false),
 		CreationTm: sql.NullTime{},
 	}
 
-	_, err = person.Insert(sqlDb, &p)
-	require.NoError(t, err)
+	_, err = person.Insert(tx, &p)
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 
 	t.Log("update statement")
 	uopts := []person.UpdateOp{
 		person.UpdateWithRowsAffectedWanted(1),
 		/*  complete as needed */
-		person.UpdateWithLastname(person.MustToMax20Text("paperino")),
-		person.UpdateWithNickname(sql.NullString(person.MustToNullableMax20Text("paolino"))),
+		person.UpdateWithLastname(person.MustValidateLastname("paperino")),
+		person.UpdateWithNickname(person.MustValidateNickname("paolino")),
 		person.UpdateWithAge(sqlutil.ToSqlNullInt32(61)),
 		person.UpdateWithConsensus(sqlutil.ToSqlNullBool(false)),
 		person.UpdateWithCreationTm(sql.NullTime{}),
 	}
 
-	_, err = person.Update(sqlDb, person.NewFilterBuilder().Build(), uopts...)
-	require.NoError(t, err)
+	_, err = person.Update(tx, person.NewFilterBuilder().Build(), uopts...)
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 
 	t.Log("select statement")
 	f := sqlmapper.NewFilterBuilder().Limit(2).Offset(0)
-	l, err := person.Select(sqlDb, f.Build())
-	require.NoError(t, err)
+	l, err := person.Select(tx, f.Build())
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 	for i, e := range l {
 		t.Logf("row: %d - %v", i, e)
 	}
 	t.Log("select-by-primary-key statement")
-	e, err := person.SelectByPrimaryKey(sqlDb, person.PrimaryKey{Id: person.MustToMax20Text("user-id")})
-	require.NoError(t, err)
+	e, err := person.SelectByPrimaryKey(tx, person.PrimaryKey{Id: person.MustValidateId("user-id")})
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
 	t.Log(e)
 
+	fdel := person.NewFilterBuilder()
+	// customize with the proper filters ...
+	// fdel.Or().And...
+	_, err = person.Delete(tx, fdel.Build())
+	require.NoError(t, sqlutil.OnErrorTxClose(tx, err))
+
+	err = sqlutil.TxClose(tx, nil)
+	require.NoError(t, err)
 }

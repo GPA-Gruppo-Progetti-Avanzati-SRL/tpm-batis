@@ -23,6 +23,14 @@ var templates embed.FS
 const (
 	TmplCollectionReadme                 = "templates/%s/readme.txt"
 	TmplCollectionEntity                 = "templates/%s/entity.txt"
+	TmplCollectionValidateString         = "templates/%s/validate-string.txt"
+	TmplCollectionValidateInt            = "templates/%s/validate-int.txt"
+	TmplCollectionValidateBool           = "templates/%s/validate-bool.txt"
+	TmplCollectionValidateTime           = "templates/%s/validate-time.txt"
+	TmplCollectionValidateNullableString = "templates/%s/validate-nullable-string.txt"
+	TmplCollectionValidateNullableInt    = "templates/%s/validate-nullable-int.txt"
+	TmplCollectionValidateNullableBool   = "templates/%s/validate-nullable-bool.txt"
+	TmplCollectionValidateNullableTime   = "templates/%s/validate-nullable-time.txt"
 	TmplCollectionEntityTest             = "templates/%s/entity_test.txt"
 	TmplCollectionInit                   = "templates/%s/init.txt"
 	TmplCollectionMapperXML              = "templates/%s/mapper-xml.txt"
@@ -53,6 +61,14 @@ const (
 func entityTmplList(tmplVersion string) []string {
 	s := make([]string, 0, 1)
 	s = append(s, fmt.Sprintf(TmplCollectionEntity, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateString, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateTime, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateNullableString, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateNullableInt, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateNullableBool, tmplVersion))
+	s = append(s, fmt.Sprintf(TmplCollectionValidateNullableTime, tmplVersion))
 	return s
 }
 
