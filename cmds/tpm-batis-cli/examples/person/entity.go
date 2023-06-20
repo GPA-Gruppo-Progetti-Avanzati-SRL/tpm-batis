@@ -14,6 +14,10 @@ const (
 	AgeFieldIndex        = 3
 	ConsensusFieldIndex  = 4
 	CreationTmFieldIndex = 5
+
+	IdFieldMaxLength       = 20
+	LastnameFieldMaxLength = 20
+	NicknameFieldMaxLength = 20
 )
 
 type Entity struct {
@@ -59,8 +63,8 @@ func ValidateId(id interface{}) (string, error) {
 		return "", fmt.Errorf("interface type %T cannot be interpretated as string", id)
 	}
 
-	if !isLengthRestrictionValid(s, 0, 0, 20) {
-		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", s, 20)
+	if !isLengthRestrictionValid(s, 0, 0, IdFieldMaxLength) {
+		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", s, IdFieldMaxLength)
 	}
 
 	return s, nil
@@ -70,7 +74,7 @@ func MustValidateId(id interface{}) string {
 	var p string
 	var err error
 	if p, err = ValidateId(id); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", id, 20))
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", id, IdFieldMaxLength))
 	}
 	return p
 }
@@ -86,8 +90,8 @@ func ValidateLastname(lastname interface{}) (string, error) {
 		return "", fmt.Errorf("interface type %T cannot be interpretated as string", lastname)
 	}
 
-	if !isLengthRestrictionValid(s, 0, 0, 20) {
-		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", s, 20)
+	if !isLengthRestrictionValid(s, 0, 0, LastnameFieldMaxLength) {
+		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", s, LastnameFieldMaxLength)
 	}
 
 	return s, nil
@@ -97,7 +101,7 @@ func MustValidateLastname(lastname interface{}) string {
 	var p string
 	var err error
 	if p, err = ValidateLastname(lastname); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", lastname, 20))
+		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", lastname, LastnameFieldMaxLength))
 	}
 	return p
 }
@@ -117,10 +121,10 @@ func ValidateNickname(nickname interface{}) (sql.NullString, error) {
 		return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpretated as string", nickname)
 	}
 
-	s, _ = util.ToMaxLength(s, 20)
+	s, _ = util.ToMaxLength(s, NicknameFieldMaxLength)
 
-	if !isLengthRestrictionValid(s, 0, 0, 20) {
-		return sql.NullString{}, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", s, 20)
+	if !isLengthRestrictionValid(s, 0, 0, NicknameFieldMaxLength) {
+		return sql.NullString{}, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", s, NicknameFieldMaxLength)
 	}
 
 	return sqlutil.ToSqlNullString(s), nil

@@ -10,9 +10,18 @@ import (
 )
 
 const (
-{{- range $i, $a := .Attributes}}
+{{ range $i, $a := .Attributes}}
 {{ $a.GoAttributeName }}FieldIndex = {{ $i }}
 {{- end}}
+
+{{ range $a := .Attributes}}
+{{- if  eq $a.GetDefinition.Typ "string" -}}
+{{ $a.GoAttributeName }}FieldMaxLength = {{ $a.GetDefinition.MaxLength }}
+{{- end }}
+{{- if  eq $a.GetDefinition.Typ "nullable-string" -}}
+{{ $a.GoAttributeName }}FieldMaxLength = {{ $a.GetDefinition.MaxLength }}
+{{- end }}
+{{ end}}
 )
 
 type {{.Schema.Properties.StructName}} struct {

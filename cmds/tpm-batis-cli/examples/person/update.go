@@ -50,10 +50,12 @@ func UpdateWithRowsAffectedWanted(p int64) UpdateOp {
 
 func UpdateWithLastname(p string) UpdateOp {
 	return func(u *UpdateData) error {
-		if _, err := ValidateLastname(p); err != nil {
+		var s string
+		var err error
+		if s, err = ValidateLastname(p); err != nil {
 			return err
 		}
-		u.Lastname = p
+		u.Lastname = s
 		u.flagsDirty.Set(LastnameFieldIndex)
 		return nil
 	}
@@ -65,10 +67,12 @@ func (uda *UpdateData) IsLastnameDirty() bool {
 
 func UpdateWithNickname(p sql.NullString) UpdateOp {
 	return func(u *UpdateData) error {
-		if _, err := ValidateNickname(p); err != nil {
+		var ns sql.NullString
+		var err error
+		if ns, err = ValidateNickname(p); err != nil {
 			return err
 		}
-		u.Nickname = p
+		u.Nickname = ns
 		u.flagsDirty.Set(NicknameFieldIndex)
 		return nil
 	}
@@ -80,10 +84,12 @@ func (uda *UpdateData) IsNicknameDirty() bool {
 
 func UpdateWithAge(p sql.NullInt32) UpdateOp {
 	return func(u *UpdateData) error {
-		if _, err := ValidateAge(p); err != nil {
+		var ni sql.NullInt32
+		var err error
+		if ni, err = ValidateAge(p); err != nil {
 			return err
 		}
-		u.Age = p
+		u.Age = ni
 		u.flagsDirty.Set(AgeFieldIndex)
 		return nil
 	}
@@ -95,10 +101,12 @@ func (uda *UpdateData) IsAgeDirty() bool {
 
 func UpdateWithConsensus(p sql.NullBool) UpdateOp {
 	return func(u *UpdateData) error {
-		if _, err := ValidateConsensus(p); err != nil {
+		var nb sql.NullBool
+		var err error
+		if nb, err = ValidateConsensus(p); err != nil {
 			return err
 		}
-		u.Consensus = p
+		u.Consensus = nb
 		u.flagsDirty.Set(ConsensusFieldIndex)
 		return nil
 	}
@@ -110,10 +118,12 @@ func (uda *UpdateData) IsConsensusDirty() bool {
 
 func UpdateWithCreationTm(p sql.NullTime) UpdateOp {
 	return func(u *UpdateData) error {
-		if _, err := ValidateCreationTm(p); err != nil {
+		var nt sql.NullTime
+		var err error
+		if nt, err = ValidateCreationTm(p); err != nil {
 			return err
 		}
-		u.CreationTm = p
+		u.CreationTm = nt
 		u.flagsDirty.Set(CreationTmFieldIndex)
 		return nil
 	}

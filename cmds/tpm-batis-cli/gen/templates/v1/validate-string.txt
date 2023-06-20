@@ -12,11 +12,11 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
     }
 
 {{ if  $a.GetDefinition.TruncateToMaxLength }}
-        s, _ = util.ToMaxLength(s, {{ $a.AttrDefinition.MaxLength}})
+        s, _ = util.ToMaxLength(s, {{ $a.GoAttributeName }}FieldMaxLength )
 {{- end }}
 
-    if !isLengthRestrictionValid(s, 0, 0, {{ $a.AttrDefinition.MaxLength}}) {
-        return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", s, {{ $a.AttrDefinition.MaxLength}})
+    if !isLengthRestrictionValid(s, 0, 0, {{ $a.GoAttributeName }}FieldMaxLength ) {
+        return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", s, {{ $a.GoAttributeName }}FieldMaxLength )
     }
 
     return s, nil
@@ -26,7 +26,7 @@ func MustValidate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interfa
     var p {{ $a.GoAttributeType }}
     var err error
     if p, err = Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }}); err != nil {
-        panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", {{ $a.GoAttributeName4Param }}, {{ $a.AttrDefinition.MaxLength}}))
+        panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", {{ $a.GoAttributeName4Param }}, {{ $a.GoAttributeName }}FieldMaxLength ))
     }
     return p
 }
