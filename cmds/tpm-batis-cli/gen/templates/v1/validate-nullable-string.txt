@@ -12,7 +12,7 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
     case string:
     	s = ti
     default:
-    	return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpreted as string", {{ $a.GoAttributeName4Param }})
+    	return sql.NullString{}, fmt.Errorf(StringTypeValidationErrorMsg, {{ $a.GoAttributeName4Param }})
     }
 
 {{ if  $a.GetDefinition.TruncateToMaxLength }}
