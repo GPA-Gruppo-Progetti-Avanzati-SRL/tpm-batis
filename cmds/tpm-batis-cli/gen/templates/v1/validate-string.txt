@@ -8,7 +8,7 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
     case string:
     	s = ti
     default:
-    	return "", fmt.Errorf("interface type %T cannot be interpretated as string", {{ $a.GoAttributeName4Param }})
+    	return "", fmt.Errorf(StringTypeValidationErrorMsg, {{ $a.GoAttributeName4Param }})
     }
 
 {{ if  $a.GetDefinition.TruncateToMaxLength }}
@@ -16,7 +16,7 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
 {{- end }}
 
     if !isLengthRestrictionValid(s, 0, 0, {{ $a.GoAttributeName }}FieldMaxLength ) {
-        return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", s, {{ $a.GoAttributeName }}FieldMaxLength )
+        return s, fmt.Errorf(StringLengthValidationErrorMsg, "{{ $a.GoAttributeName }}", s, {{ $a.GoAttributeName }}FieldMaxLength )
     }
 
     return s, nil
@@ -26,7 +26,7 @@ func MustValidate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interfa
     var p {{ $a.GoAttributeType }}
     var err error
     if p, err = Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }}); err != nil {
-        panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "{{ $a.GoAttributeName }}", {{ $a.GoAttributeName4Param }}, {{ $a.GoAttributeName }}FieldMaxLength ))
+        panic(err)
     }
     return p
 }

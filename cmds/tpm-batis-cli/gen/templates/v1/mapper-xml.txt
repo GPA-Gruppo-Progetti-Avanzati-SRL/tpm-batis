@@ -32,23 +32,26 @@
 
     </select>
 
+    <select id='count'  >
+        select count(*)
+        from {{ .Schema.Properties.DbName }}
+        <include refid='filter_where_clause' />
+    </select>
+
     {{- if .Schema.HasPrimaryKey }}
     <select id="selectByPrimaryKey" >
         select  {{- range $i, $a := .Attributes}} {{ if $i }},{{ end }} {{ $a.DbAttributeName }} {{- end}}
         from {{ .Schema.Properties.DbName }}
         where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
     </select>
-    {{- end }}
 
-    <select id='count'  >
+    <select id='countByPrimaryKey'  >
         select count(*)
         from {{ .Schema.Properties.DbName }}
-        <include refid='filter_where_clause' />
-
-        <if test=".filter.OrderBy" >
-            order by ${.filter.OrderBy}
-        </if>
+        where {{- range $i, $a := .PkAttributes}} {{ if $i }}and{{- end }} {{ $a.DbAttributeName }} = #{.pk.{{ $a.GoAttributeName  }}} {{ end }}
     </select>
+    {{- end }}
+
 
 {{- if eq .Schema.Properties.DbType "table" }}
     <delete id='delete'  >

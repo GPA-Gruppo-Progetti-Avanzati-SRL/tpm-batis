@@ -50,6 +50,11 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 	return true
 }
 
+const (
+	StringTypeValidationErrorMsg   = "interface type %T cannot be interpreted as string"
+	StringLengthValidationErrorMsg = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
+)
+
 // constraints validation convenience functions.
 
 func ValidateId(id interface{}) (string, error) {
@@ -60,11 +65,11 @@ func ValidateId(id interface{}) (string, error) {
 	case string:
 		s = ti
 	default:
-		return "", fmt.Errorf("interface type %T cannot be interpretated as string", id)
+		return "", fmt.Errorf(StringTypeValidationErrorMsg, id)
 	}
 
 	if !isLengthRestrictionValid(s, 0, 0, IdFieldMaxLength) {
-		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", s, IdFieldMaxLength)
+		return s, fmt.Errorf(StringLengthValidationErrorMsg, "Id", s, IdFieldMaxLength)
 	}
 
 	return s, nil
@@ -74,7 +79,7 @@ func MustValidateId(id interface{}) string {
 	var p string
 	var err error
 	if p, err = ValidateId(id); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Id", id, IdFieldMaxLength))
+		panic(err)
 	}
 	return p
 }
@@ -87,11 +92,11 @@ func ValidateLastname(lastname interface{}) (string, error) {
 	case string:
 		s = ti
 	default:
-		return "", fmt.Errorf("interface type %T cannot be interpretated as string", lastname)
+		return "", fmt.Errorf(StringTypeValidationErrorMsg, lastname)
 	}
 
 	if !isLengthRestrictionValid(s, 0, 0, LastnameFieldMaxLength) {
-		return s, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", s, LastnameFieldMaxLength)
+		return s, fmt.Errorf(StringLengthValidationErrorMsg, "Lastname", s, LastnameFieldMaxLength)
 	}
 
 	return s, nil
@@ -101,7 +106,7 @@ func MustValidateLastname(lastname interface{}) string {
 	var p string
 	var err error
 	if p, err = ValidateLastname(lastname); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Lastname", lastname, LastnameFieldMaxLength))
+		panic(err)
 	}
 	return p
 }
@@ -118,13 +123,13 @@ func ValidateNickname(nickname interface{}) (sql.NullString, error) {
 	case string:
 		s = ti
 	default:
-		return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpretated as string", nickname)
+		return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpreted as string", nickname)
 	}
 
 	s, _ = util.ToMaxLength(s, NicknameFieldMaxLength)
 
 	if !isLengthRestrictionValid(s, 0, 0, NicknameFieldMaxLength) {
-		return sql.NullString{}, fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", s, NicknameFieldMaxLength)
+		return sql.NullString{}, fmt.Errorf(StringLengthValidationErrorMsg, "Nickname", s, NicknameFieldMaxLength)
 	}
 
 	return sqlutil.ToSqlNullString(s), nil
@@ -134,7 +139,7 @@ func MustValidateNickname(nickname interface{}) sql.NullString {
 	var p sql.NullString
 	var err error
 	if p, err = ValidateNickname(nickname); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Nickname", nickname, 20))
+		panic(err)
 	}
 	return p
 }
@@ -148,7 +153,7 @@ func MustValidateAge(age sql.NullInt32) sql.NullInt32 {
 	var p sql.NullInt32
 	var err error
 	if p, err = ValidateAge(age); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Age", age, 0))
+		panic(err)
 	}
 	return p
 }
@@ -162,7 +167,7 @@ func MustValidateConsensus(consensus sql.NullBool) sql.NullBool {
 	var p sql.NullBool
 	var err error
 	if p, err = ValidateConsensus(consensus); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "Consensus", consensus, 0))
+		panic(err)
 	}
 	return p
 }
@@ -176,7 +181,7 @@ func MustValidateCreationTm(creationTm sql.NullTime) sql.NullTime {
 	var p sql.NullTime
 	var err error
 	if p, err = ValidateCreationTm(creationTm); err != nil {
-		panic(fmt.Errorf("cannot satisfy length restriction for %s with value %s and of max-length: %d", "CreationTm", creationTm, 0))
+		panic(err)
 	}
 	return p
 }

@@ -39,6 +39,37 @@ func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]Entity, error) {
 
 	return ents, nil
 }
+
+func Count(sqlDbOrTx interface{}, f sqlmapper.Filter) (int, error) {
+
+	const semLogContext = "person::count"
+
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"filter": f,
+	}
+	sqlStmt, err := mapper.GetMappedStatement("count", mapp)
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	var numRows int
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg(semLogContext)
+		return 0, err
+	}
+
+	return numRows, nil
+}
 func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (Entity, error) {
 
 	const semLogContext = "person::select-by-primary-key"
@@ -47,6 +78,7 @@ func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (Entity, error) {
 	mapp = map[string]interface{}{
 		"pk": pk,
 	}
+
 	sqlStmt, err := mapper.GetMappedStatement("selectByPrimaryKey", mapp)
 	if err != nil {
 		log.Fatal().Err(err).Msg(semLogContext)
@@ -70,4 +102,35 @@ func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (Entity, error) {
 	}
 
 	return ent, nil
+}
+
+func CountByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (int, error) {
+
+	const semLogContext = "person::count-by-primary-key"
+
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"pk": pk,
+	}
+	sqlStmt, err := mapper.GetMappedStatement("count", mapp)
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	var numRows int
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
+	if err != nil {
+		log.Error().Err(err).Send()
+		return 0, err
+	}
+
+	return numRows, nil
 }

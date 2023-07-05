@@ -40,6 +40,37 @@ func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]{{ .Schema.Properties.
 	return ents, nil
 }
 
+func Count(sqlDbOrTx interface{}, f sqlmapper.Filter) (int, error) {
+
+	const semLogContext = "{{ .Schema.PackageName }}::count"
+
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"filter": f,
+	}
+	sqlStmt, err := mapper.GetMappedStatement("count", mapp)
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	var numRows int
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
+	if err != nil {
+		log.Error().Err(err).Msg(semLogContext)
+		return 0, err
+	}
+
+	return numRows, nil
+}
+
 {{- if .Schema.HasPrimaryKey }}
 func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) ({{ .Schema.Properties.StructName }}, error) {
 
@@ -49,6 +80,7 @@ func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) ({{ .Schema.Proper
 	mapp = map[string]interface{}{
 		"pk":     pk,
 	}
+
 	sqlStmt, err := mapper.GetMappedStatement("selectByPrimaryKey", mapp)
 	if err != nil {
 		log.Fatal().Err(err).Msg(semLogContext)
@@ -72,5 +104,36 @@ func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) ({{ .Schema.Proper
 	}
 
 	return ent, nil
+}
+
+func CountByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (int, error) {
+
+	const semLogContext = "{{ .Schema.PackageName }}::count-by-primary-key"
+
+	var mapp map[string]interface{}
+	mapp = map[string]interface{}{
+		"pk":     pk,
+	}
+	sqlStmt, err := mapper.GetMappedStatement("count", mapp)
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	var numRows int
+	switch db := sqlDbOrTx.(type) {
+	case *sqlx.DB:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	case *sqlx.Tx:
+		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
+	default:
+		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+	}
+
+	if err != nil {
+		log.Error().Err(err).Send()
+		return 0, err
+	}
+
+	return numRows, nil
 }
 {{- end }}

@@ -31,20 +31,22 @@
         </if>
 
     </select>
+
+    <select id='count'  >
+        select count(*)
+        from person
+        <include refid='filter_where_clause' />
+    </select>
     <select id="selectByPrimaryKey" >
         select  id , lastname , nickname , age , consensus , creation_tm
         from person
         where  id = #{.pk.Id} 
     </select>
 
-    <select id='count'  >
+    <select id='countByPrimaryKey'  >
         select count(*)
         from person
-        <include refid='filter_where_clause' />
-
-        <if test=".filter.OrderBy" >
-            order by ${.filter.OrderBy}
-        </if>
+        where  id = #{.pk.Id} 
     </select>
     <delete id='delete'  >
         delete

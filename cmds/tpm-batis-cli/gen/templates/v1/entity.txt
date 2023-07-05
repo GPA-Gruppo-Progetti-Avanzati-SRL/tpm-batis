@@ -55,6 +55,11 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 	return true
 }
 
+const (
+   StringTypeValidationErrorMsg = "interface type %T cannot be interpreted as string"
+   StringLengthValidationErrorMsg = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
+)
+
 // constraints validation convenience functions.
 {{ range $a := .Attributes}}
 {{- if  eq $a.GetDefinition.Typ "string" }}
