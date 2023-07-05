@@ -8,6 +8,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	WrongSqlXParam = "select accepts *sqlx.DB or *sqlx.Tx objects, provided %T"
+)
+
 func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]Entity, error) {
 
 	const semLogContext = "person::select"
@@ -29,7 +33,7 @@ func Select(sqlDbOrTx interface{}, f sqlmapper.Filter) ([]Entity, error) {
 	case *sqlx.Tx:
 		err = db.Select(&ents, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
 	default:
-		return nil, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+		return nil, fmt.Errorf(WrongSqlXParam, sqlDbOrTx)
 	}
 
 	if err != nil {
@@ -60,7 +64,7 @@ func Count(sqlDbOrTx interface{}, f sqlmapper.Filter) (int, error) {
 	case *sqlx.Tx:
 		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
 	default:
-		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+		return 0, fmt.Errorf(WrongSqlXParam, sqlDbOrTx)
 	}
 
 	if err != nil {
@@ -92,7 +96,7 @@ func SelectByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (Entity, error) {
 	case *sqlx.Tx:
 		err = db.Get(&ent, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
 	default:
-		return Entity{}, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+		return Entity{}, fmt.Errorf(WrongSqlXParam, sqlDbOrTx)
 	}
 
 	if err != nil {
@@ -124,7 +128,7 @@ func CountByPrimaryKey(sqlDbOrTx interface{}, pk PrimaryKey) (int, error) {
 	case *sqlx.Tx:
 		err = db.Get(&numRows, sqlStmt.GetStatement(), sqlStmt.GetParams()...)
 	default:
-		return 0, fmt.Errorf("select accepts *sqlx.DB or *sqlx.Tx objects, provided %T", sqlDbOrTx)
+		return 0, fmt.Errorf(WrongSqlXParam, sqlDbOrTx)
 	}
 
 	if err != nil {
