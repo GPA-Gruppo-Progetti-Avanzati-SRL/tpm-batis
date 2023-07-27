@@ -56,8 +56,8 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 }
 
 const (
-   StringTypeValidationErrorMsg = "interface type %T cannot be interpreted as string"
-   StringLengthValidationErrorMsg = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
+   ParamCannotBeAdaptedToStringErrorMsg = "interface type %T cannot be interpreted as string"
+   StringLengthRestrictionErrorMsg = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
 )
 
 // constraints validation convenience functions.

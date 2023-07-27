@@ -51,8 +51,8 @@ func isLengthRestrictionValid(s string, length, minLength, maxLength int) bool {
 }
 
 const (
-	StringTypeValidationErrorMsg   = "interface type %T cannot be interpreted as string"
-	StringLengthValidationErrorMsg = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
+	ParamCannotBeAdaptedToStringErrorMsg = "interface type %T cannot be interpreted as string"
+	StringLengthRestrictionErrorMsg      = "cannot satisfy length restriction for %s with value %s and of max-length: %d"
 )
 
 // constraints validation convenience functions.
@@ -65,11 +65,11 @@ func ValidateId(id interface{}) (string, error) {
 	case string:
 		s = ti
 	default:
-		return "", fmt.Errorf(StringTypeValidationErrorMsg, id)
+		return "", fmt.Errorf(ParamCannotBeAdaptedToStringErrorMsg, id)
 	}
 
 	if !isLengthRestrictionValid(s, 0, 0, IdFieldMaxLength) {
-		return s, fmt.Errorf(StringLengthValidationErrorMsg, "Id", s, IdFieldMaxLength)
+		return s, fmt.Errorf(StringLengthRestrictionErrorMsg, "Id", s, IdFieldMaxLength)
 	}
 
 	return s, nil
@@ -92,11 +92,11 @@ func ValidateLastname(lastname interface{}) (string, error) {
 	case string:
 		s = ti
 	default:
-		return "", fmt.Errorf(StringTypeValidationErrorMsg, lastname)
+		return "", fmt.Errorf(ParamCannotBeAdaptedToStringErrorMsg, lastname)
 	}
 
 	if !isLengthRestrictionValid(s, 0, 0, LastnameFieldMaxLength) {
-		return s, fmt.Errorf(StringLengthValidationErrorMsg, "Lastname", s, LastnameFieldMaxLength)
+		return s, fmt.Errorf(StringLengthRestrictionErrorMsg, "Lastname", s, LastnameFieldMaxLength)
 	}
 
 	return s, nil
@@ -123,13 +123,13 @@ func ValidateNickname(nickname interface{}) (sql.NullString, error) {
 	case string:
 		s = ti
 	default:
-		return sql.NullString{}, fmt.Errorf("interface type %T cannot be interpreted as string", nickname)
+		return sql.NullString{}, fmt.Errorf(ParamCannotBeAdaptedToStringErrorMsg, nickname)
 	}
 
 	s, _ = util.ToMaxLength(s, NicknameFieldMaxLength)
 
 	if !isLengthRestrictionValid(s, 0, 0, NicknameFieldMaxLength) {
-		return sql.NullString{}, fmt.Errorf(StringLengthValidationErrorMsg, "Nickname", s, NicknameFieldMaxLength)
+		return sql.NullString{}, fmt.Errorf(StringLengthRestrictionErrorMsg, "Nickname", s, NicknameFieldMaxLength)
 	}
 
 	return sqlutil.ToSqlNullString(s), nil

@@ -8,7 +8,7 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
     case string:
     	s = ti
     default:
-    	return "", fmt.Errorf(StringTypeValidationErrorMsg, {{ $a.GoAttributeName4Param }})
+    	return "", fmt.Errorf(ParamCannotBeAdaptedToStringErrorMsg, {{ $a.GoAttributeName4Param }})
     }
 
 {{ if  $a.GetDefinition.TruncateToMaxLength }}
@@ -16,7 +16,7 @@ func Validate{{ $a.GoAttributeName }}({{ $a.GoAttributeName4Param }} interface{}
 {{- end }}
 
     if !isLengthRestrictionValid(s, 0, 0, {{ $a.GoAttributeName }}FieldMaxLength ) {
-        return s, fmt.Errorf(StringLengthValidationErrorMsg, "{{ $a.GoAttributeName }}", s, {{ $a.GoAttributeName }}FieldMaxLength )
+        return s, fmt.Errorf(StringLengthRestrictionErrorMsg, "{{ $a.GoAttributeName }}", s, {{ $a.GoAttributeName }}FieldMaxLength )
     }
 
     return s, nil
