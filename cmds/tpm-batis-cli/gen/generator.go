@@ -7,6 +7,7 @@ import (
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/gen/attribute"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-batis/cmds/tpm-batis-cli/schema"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/fileutil"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/templateutil"
 	"github.com/rs/zerolog/log"
 	godiffpatch "github.com/sourcegraph/go-diff-patch"
@@ -416,7 +417,7 @@ func parseTemplateWithFuncMapsProcessWrite2File(templates []templateutil.Info, f
 }
 
 func readCurrentFileContent(fn string) ([]byte, bool, error) {
-	if util.FileExists(fn) {
+	if fileutil.FileExists(fn) {
 		b, err := os.ReadFile(fn)
 		if err != nil {
 			return nil, true, err
